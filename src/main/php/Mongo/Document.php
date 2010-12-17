@@ -20,10 +20,6 @@ class Mongo_Document extends Mongo_Document_Abstract 								{
 	/****
 	 **	END
 	 ****/
-	private 	$_Mongo_Collection		= null;	//Holds the MongoCollection that this Document belongs to
-												//However - don't use this directly 
-												//	- use 	$this->raw_mongoCollection() for safety
-												//	or 		$this->mongoCollection to get the class
 	private		$_Mongo_Connection		= null;
 	
 	protected	function mongoCollection()											{
@@ -51,7 +47,7 @@ class Mongo_Document extends Mongo_Document_Abstract 								{
 		 *	@param:		$mongoCollection- a Mongo_Collection which is where the document "lives"
 		 */
 		parent::__construct($arrDocument);
-		if(null 			!= $mongoCollection)									{
+		if(!is_null($mongoCollection))												{
 			$this->setDatabaseName($mongoCollection->getDatabaseName());
 			$this->setCollectionName($mongoCollection->getCollectionName());
 			$this->_Mongo_Collection	= $mongoCollection;
@@ -92,19 +88,7 @@ class Mongo_Document extends Mongo_Document_Abstract 								{
 		 *	@param:		$bUnique	= true 	(perform a $addToSet)
 		 *							= false	(perform a $push)
 		 */
-		if(!$this->nameExists(Mongo_Document_Abstract::FIELD_ID))
-			throw new Mongo_Exception(Mongo_Exception::ERROR_MUST_SAVE_FIRST);
-		
-		$modifier			= ($bUnique)?'$addToSet':'$push';
-		$arrAction			= array($modifier => array($strElementName => $strItemToAdd));
-		
-		$options['safe']	= true;
-		$options['upsert']	= true;
-		
-		$arrId["_id"]		= $this->getByName(Mongo_Document_Abstract::FIELD_ID);		
-		$return 			= $this->mongoCollection()->raw_mongoCollection()->update($arrId, $arrAction, $options);
-		if(!$return["err"])
-			$this->setArrDocument($this->mongoCollection()->findOne($arrId)->export());
+		$this->setArrDocument($this->mongoCollection()->addToArray($this, $strElementName, $strItemToAdd, $bUnique));
 		return true;
 	}
 	public		function createToken()												{

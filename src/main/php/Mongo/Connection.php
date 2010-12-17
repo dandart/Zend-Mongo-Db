@@ -63,7 +63,7 @@ class Mongo_Connection 																{
 		if(is_string($connection))
 			return $connection;
 			
-		if ($connection instanceof Zend_Config)
+		if (is_a($connection, "Zend_Config"))
             $connection 				= $connection->toArray();
         
 		$strConnectionString			= "";

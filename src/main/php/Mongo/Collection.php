@@ -31,18 +31,21 @@ class Mongo_Collection implements Countable											{
 		 *					= a Connection
 		 *					= a Mongo_Db
 		 */
-		$classMixedVariable		= get_class($mixedVariable);
 		
-		if(		"MongoCollection" 	== $classMixedVariable	
-			|| 	is_subclass_of($mixedVariable, "MongoCollection"))
-					return $this->_constructFromCollection($mixedVariable);
-		if(		null == $mixedVariable
-			||	"Mongo_Connection" 	== $classMixedVariable 	
-			|| 	is_subclass_of($mixedVariable, "Mongo_Connection"))
-					return $this->_constructFromConnection($mixedVariable);
-		if("Mongo_Db" 			== $classMixedVariable 	|| is_subclass_of($mixedVariable, "Mongo_Db"))
-			return $this->_constructFromDatabase($mixedVariable);
-		//Otherwise ....
+		//Some sanity checking - basically we check that the default class exists
+		$this->_strClassDocumentType	= $this->setDefaultDocumentType($this->_strClassDocumentType);
+		
+		if(is_null($mixedVariable))
+			return $this->_constructFromConnection(null);
+		if(is_object($mixedVariable))												{
+			if(	is_a($mixedVariable,"MongoCollection"))
+				return $this->_constructFromCollection($mixedVariable);
+			if(	is_a($mixedVariable,"Mongo_Connection"))
+				return $this->_constructFromConnection($mixedVariable);
+			if( is_a($mixedVariable,"Mongo_Db"))
+				return $this->_constructFromDatabase($mixedVariable);
+		}
+		
 		throw new Mongo_Exception(Mongo_Exception::ERROR_MISSING_VALUES);
 	}
 	private function _constructFromCollection($mixedVariable)						{
@@ -68,23 +71,30 @@ class Mongo_Collection implements Countable											{
 		$this->_rawMongoCollection	= $mixedVariable->getRawCollection($this->_strCollection);
 	}
 	public  function __toString()													{
-		return $this->raw_mongoCollection()->toString();
+		/**
+		 *	@purpose: Returns the FULL name of the collection ie: Database.Collection
+		 */
+		return $this->raw_mongoCollection()->__toString();
 	}
 	
-	public  function createDefaultDocument()										{
-		$classDocument	= $this->getDocumentClass();
-		return new $classDocument();
+	public  function createDocument($arrDocument = null, $bDisconnect = false)		{
+		/**
+		 *	@purpose: 	This creates a default document for this collection
+		 *	@return:	Mongo_Document (or child)
+		 */
+		$classDocument	= $this->getDocumentType($arrDocument);
+		$mongoCollection= ($bDisconnect)?null:$this;
+		return new $classDocument($arrDocument, $mongoCollection);
 	}
 	public 	function decodeReference($arrReference)									{
 		/**
 		 *	@purpose:	decodes a DBReference
 		 *	@param:		$arrReference	= array like: array($ref, $id, $database)
 		 */
-		$data	= $this->raw_mongoCollection()->getDBRef($arrReference);
-		if(!$data)
+		$arrDocument	= $this->raw_mongoCollection()->getDBRef($arrReference);
+		if(!$arrDocument)
 			return null;
-		$strDocumentClass					= $this->getDocumentClass($data);
-		return new $strDocumentClass($data);
+		return $this->createDocument($arrDocument, true);
 	}
 	public  function drop()															{
 		/**
@@ -117,8 +127,7 @@ class Mongo_Collection implements Countable											{
 		$arrDocument	= $this->raw_mongoCollection()->findOne($query, $fields);
 		if(!$arrDocument)
 			return null;
-		$classType		= $this->getDocumentClass($arrDocument);
-		return new $classType($arrDocument, $this);
+		return $this->createDocument($arrDocument);
 	}
 	public 	function getCollectionClass()											{
 		return get_class($this);
@@ -130,16 +139,13 @@ class Mongo_Collection implements Countable											{
 		 */
 		return $this->raw_mongoCollection()->getName();
 	}
-	private function getDocumentClass($arrDocument = null)							{
+	private function getDocumentType($arrDocument = null)							{
 		/**
 		 *	@purpose:	Works out what type of Document class should be created
 		 *				NOTE: 	This checks if an existing document is trying to be "recreated" and if so it the _Type is valid
 		 *				SECOND:	This checks if the collection has a default type
 		 */
-		if(isset($arrDocument) && isset($arrDocument[Mongo_Document::FIELD_TYPE]))
-			return class_exists($arrDocument[Mongo_Document::FIELD_TYPE])
-						?$arrDocument[Mongo_Document::FIELD_TYPE]:self::DEFAULT_DOCUMENT_TYPE;
-		return $this->getDefaultDocumentType();
+		return Mongo_Document_Abstract::getDocumentClass($this->getDefaultDocumentType(), $arrDocument);
 	}
 	public  function getDatabaseName()												{
 		/**
@@ -150,13 +156,24 @@ class Mongo_Collection implements Countable											{
 	public 	function getDefaultDocumentType()										{
 		return (class_exists($this->_strClassDocumentType))?$this->_strClassDocumentType:self::DEFAULT_DOCUMENT_TYPE;
 	}
-	public 	function mongoDatabase()												{
+	public 	function setDefaultDocumentType($mixedClassDefaultDoc = null)			{
 		/**
-		 *	@purpose: Returns the Mongo_Db object that this collection is connected to
+		 *	@purpose: 	This sets the defaultDocumentType for this collection
+		 *	@param:		$classDefautDoc - this can be 
+		 *					a) string = the name of the class
+		 *					b) object = an instance of the class
+		 *					c) null   = reset to default
 		 */
-		return new Mongo_Db($this->getDatabaseName());
+		if(is_null($mixedClassDefaultDoc))
+			return $this->_strClassDocumentType = self::DEFAULT_DOCUMENT_TYPE;
+		if(is_object($mixedClassDefaultDoc) && is_a($mixedClassDefaultDoc, self::DEFAULT_DOCUMENT_TYPE))
+			return $this->_strClassDocumentType = get_class($mixedClassDefaultDoc);
+		if(is_string($mixedClassDefaultDoc) && class_exists($mixedClassDefaultDoc))
+			return $this->_strClassDocumentType = $mixedClassDefaultDoc;
+		throw new Mongo_Exception(Mongo_Exception::ERROR_MISSING_VALUES);
 	}
-	public  function insert(Mongo_Document $mongoDocument, $bSafe = true)			{
+	
+	public  function insert(Mongo_Document $mongoDocument, 	$bSafe = true)			{
 		/**
 		 *	@purpose:	Inserts a query into the database
 		 *	@param:		$mongoDocument - the document to be inserted
@@ -169,7 +186,7 @@ class Mongo_Collection implements Countable											{
 		$this->raw_mongoCollection()->insert($arrDocument, $options);
 		return $mongoDocument;
 	}
-	public  function save(Mongo_Document $mongoDocument, $bSafe = true)				{
+	public  function save(Mongo_Document $mongoDocument, 	$bSafe = true)			{
 		/**
 		 *	@purpose:	Performs an Upsert on the Mongo_Document
 		 *	@param:		$mongoDocument - the document to be saved
@@ -185,11 +202,36 @@ class Mongo_Collection implements Countable											{
 				
 		$options["safe"]	= $bSafe;
 		$this->raw_mongoCollection()->save($arrDocument, $options);
-		$classType			= $this->getDocumentClass($arrDocument);
-		return new $classType($arrDocument, $this);
+		return $this->createDocument($arrDocument);
 	}
+	public 	function addToArray(Mongo_Document $mongoDocument, $strProperty, 
+								$strItemToAdd, $bUnique)							{
+		/**
+		 *	@purpose: 	This adds a new element to an array in the Mongo_Document
+		 *				The Mongo_Document must be saved first so that we have a _id field
+		 *	@param:		$mongoDocument - the document to update
+		 *	@param:		
+		 */
+		if(!$mongoDocument->nameExists(Mongo_Document_Abstract::FIELD_ID))
+			throw new Mongo_Exception(Mongo_Exception::ERROR_MUST_SAVE_FIRST);
+		if($mongoDocument->isClosed() && !$mongoDocument->isPropertyRequired($strProperty))
+			throw new Mongo_Exception(sprintf(Mongo_Exception::ERROR_CLOSED_DOCUMENT, $strProperty));
+		
+		$modifier			= ($bUnique)?Mongo_Document_Abstract::MODIFIER_ADD_TO_SET:Mongo_Document_Abstract::MODIFIER_PUSH;
+		$arrAction			= array($modifier => array($strProperty => $strItemToAdd));
+		
+		$options['safe']	= true;
+		$options['upsert']	= true;
+		$options['multiple']= false;
+		
+		$arrId[Mongo_Document_Abstract::FIELD_ID]
+							= $mongoDocument->getByName(Mongo_Document_Abstract::FIELD_ID);
+		$this->raw_mongoCollection()->update($arrId, $arrAction, $options);
+		
+		return $this->findOne($arrId)->export();
+								}
 	
-	public 	function raw_mongoCollection()											{
+	private function raw_mongoCollection()											{
 		/**
 		 *	@purpose: 	Helper function to ensure that the mongoCollection is always valid
 		 *			 	It is not expected that this will need to be called very frequently, however....
@@ -198,6 +240,7 @@ class Mongo_Collection implements Countable											{
 			throw new Mongo_Exception(Mongo_Exception::ERROR_COLLECTION_NULL);
 		return $this->_rawMongoCollection;
 	}
+	
 	//Implements Countable
 	public 	function count()														{
 		return count($this->raw_mongoCollection());

@@ -21,12 +21,9 @@ class Mongo_Document_Iterator implements OuterIterator, Countable					{
 		 *				NOTE: 	This checks if an existing document is trying to be "recreated" and if so it the _Type is valid
 		 *				SECOND:	This checks if the collection has a default type
 		 */
-		if(isset($arrDocument) && isset($arrDocument[Mongo_Document::FIELD_TYPE]))
-			return class_exists($arrDocument[Mongo_Document::FIELD_TYPE])
-						?$arrDocument[Mongo_Document::FIELD_TYPE]:Mongo_Mongo_Collection::DEFAULT_DOCUMENT_TYPE;
-		if(isset($this->_Mongo_Collection))
-			return $this->_Mongo_Collection->getDefaultDocumentType();
-		return Mongo_Mongo_Collection::DEFAULT_DOCUMENT_TYPE;
+		$strDefault	= isset($this->_Mongo_Collection)?
+							$this->_Mongo_Collection->getDefaultDocumentType():Mongo_Mongo_Collection::DEFAULT_DOCUMENT_TYPE;
+		return Mongo_Document_Abstract::getDocumentClass($strDefault, $arrDocument);
 	}
 	public function getInnerIterator()												{
 		/**
