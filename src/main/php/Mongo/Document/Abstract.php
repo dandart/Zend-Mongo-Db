@@ -9,18 +9,27 @@
  */
 
 abstract class Mongo_Document_Abstract implements ArrayAccess						{
-	const		FIELD_ID				= "_id";
-	const		FIELD_TYPE				= "_Type";
+	const		FIELD_CLOSED			= "_Closed";	//Holds true | false 
+														//(if true then Properties are limited to _requirements)
+	const		FIELD_ID				= "_id";		//Holds the MongoId
+	const		FIELD_TYPE				= "_Type";		//Holds the "class" for this document
+	
+	const		REQ_REQUIRED			= "Required";
+	
+	const		TYPE_MONGO_DOCUMENT		= "Mongo_Document";
+	const		TYPE_MONGO_DOCUMENT_SET	= "Mongo_DocumentSet";
 	
 	//This holds a cached array of ZendRequirements (either Validators or Filters)
+	//This is static so that we only load these once per request and they're live for all documents
 	private		static $_cachedZendReq	= array();
-	
 	
 	private 	$_arrDocument			= null;
 	protected	$_arrSpecialKeys		= array ( self::FIELD_ID
 												, self::FIELD_TYPE
+												, self::FIELD_CLOSED
 												);
 	protected	$_arrRequirements		= array();
+	protected	$_bClosed				= false;
 	
 	public 		function __construct($arrDocument = null)							{
 		$this->setArrDocument($arrDocument);
@@ -28,9 +37,15 @@ abstract class Mongo_Document_Abstract implements ArrayAccess						{
 		$this->_arrRequirements			= $this->makeRequirementsTidy($this->_arrRequirements);
 	}
 	protected 	function setArrDocument($arrDocument)								{
-		$this->_arrDocument				= $arrDocument;
-		//Set the magic _Type
-		$this->_arrDocument[self::FIELD_TYPE]	= get_class($this);
+		if(!$arrDocument)
+			$arrDocument							= array();
+		$this->_arrDocument							= $arrDocument;
+		
+		if(isset($arrDocument[self::FIELD_TYPE]) && $arrDocument[self::FIELD_TYPE] != get_class($this))
+			throw new Mongo_Exception(Mongo_Exception::ERROR_ARRAY_WRONG_TYPE);
+		$this->_arrDocument[self::FIELD_TYPE]		= get_class($this);
+		if($this->_bClosed)
+			$this->_arrDocument[self::FIELD_CLOSED]	= $this->_bClosed;
 	}
 	protected	function getByName($name)											{
 		//firstly if the property doesn't exist then leave this
@@ -46,10 +61,11 @@ abstract class Mongo_Document_Abstract implements ArrayAccess						{
 		$data	= $this->_arrDocument[$key];
 		if(!is_array($data))														{
 			//It's not an array - lets just return it!
+//@TODO BUG HERE - if this should be a MONGO_DOCUMENT but it's empty then a nothing will be returned! (check!!)
 			return $data;
 		}
 		//Otherwise time to go to work!
-		$bIsReference						= Mongo_Reference::isRef($data);
+		$bIsReference						= Mongo_Type_Reference::isRef($data);
 		if ($bIsReference) 															{
 			$document						= $this	->mongoCollection()->decodeReference($data);
 			if(!$document)
@@ -59,17 +75,19 @@ abstract class Mongo_Document_Abstract implements ArrayAccess						{
 		
 		//Ok - so it's an array (is it an embedded document or an array or embedded documents?)
 		
-		//At the moment - in lieu of having requirements set-up we're using a horrible hack!
-		//If the first element of the array_keys is "0" then this is a Mongo_DocumentSet otherwise it's a Mongo_Document
+		//We try to determine the type of document
 		$arrArrayKeys	= array_keys($data);
-		$classDocument	= (0 === $arrArrayKeys[0])?"Mongo_DocumentSet":"Mongo_Document";	
-														//@TODO - actually should draw this from the type
-		
-//@TODO - there are LOTS of problems here!
-//	1. How do we deal with "different Document types - ie Address type shouldn't be a Mongo_Document"
-//	2. How do we save these new documents - how do they hold the history of where they came from
-//	3. (todo later - how do we deal with requirements)
-	
+		if(isset($arrArrayKeys[self::FIELD_TYPE]))
+			$classDocument	= $arrArrayKeys[self::FIELD_TYPE];
+		elseif(		is_array($this->_arrRequirements[$key])
+				&& 	array_key_exists(self::TYPE_MONGO_DOCUMENT_SET, $this->_arrRequirements[$key]))
+			$classDocument	= self::TYPE_MONGO_DOCUMENT_SET;
+		elseif(		is_array($this->_arrRequirements[$key])
+				&&	array_key_exists(self::TYPE_MONGO_DOCUMENT, $this->_arrRequirements[$key]))
+			$classDocument	= self::TYPE_MONGO_DOCUMENT;
+		else
+			$classDocument	= (0 === $arrArrayKeys[0])?self::TYPE_MONGO_DOCUMENT_SET:self::TYPE_MONGO_DOCUMENT;	
+
 		//For now we make new "Mongo_Documents" - but later we should allow the requriements to specify if these are different
 		$mongoDocument						= new $classDocument($data, $this->mongoCollection());
 		return $mongoDocument;
@@ -90,6 +108,13 @@ abstract class Mongo_Document_Abstract implements ArrayAccess						{
 		 *	@value:		The value to set it to
 		 */
 		
+		//If this is a Closed Document then validate that Key is in Requirements
+		if(		isset($this->_arrDocument[self::FIELD_CLOSED])
+			&& 	true 	==  $this->_arrDocument[self::FIELD_CLOSED]
+			&&  false 	==  array_search($key, $this->_arrSpecialKeys)
+			&& 	false 	=== array_key_exists($key, $this->_arrRequirements))
+				throw new Mongo_Exception(sprintf(Mongo_Exception::ERROR_CLOSED_DOCUMENT, $key));
+		
 		//Check that this is valid
 		$validators 	= $this->getValidators($key);
 		if (!is_null($value) && !$validators->isValid($value))
@@ -99,7 +124,12 @@ abstract class Mongo_Document_Abstract implements ArrayAccess						{
 			unset($this->_arrDocument[$key]);
 			return null;
 		}
-		return $this->_arrDocument[$key]	= $value;
+		if(self::TYPE_MONGO_DOCUMENT	== gettype($value) || self::TYPE_MONGO_DOCUMENT_SET == gettype($value))
+			//If we're trying to save (set) a Document or Document set then we should export to get the raw data
+			//Note: This will do an integrity check at this stage
+			return $this->_arrDocument[$key]	= $value->export();
+		else
+			return $this->_arrDocument[$key]	= $value;
 	}
 	
 	abstract	protected function mongoCollection();
@@ -107,8 +137,27 @@ abstract class Mongo_Document_Abstract implements ArrayAccess						{
 	public  	function export()													{
 		/**
 		 *	@purpose:	Returns the document as an array 
+		 *				NOTE: This does an integrity check to ensure that all require options are included
 		 *	@return:	$_arrDocument
 		 */
+		// make sure required properties are not empty
+		$requiredProperties = $this->getPropertiesWithRequirement(self::REQ_REQUIRED);
+		foreach ($requiredProperties as $property)
+			if (   !isset($this->_arrDocument[$property]) 
+				|| (is_array($this->_arrDocument[$property]) 
+					&& empty($this->_arrDocument[$property])))
+				throw new Mongo_Exception(sprintf(Mongo_Exception::ERROR_PROPERTY_REQUIRED, $property));
+						
+		//If this is a Closed Document then validate that all the Keys are in Requirements
+		if(		isset($this->_arrDocument[self::FIELD_CLOSED])
+			&& 	true 	== $this->_arrDocument[self::FIELD_CLOSED]
+			)
+			foreach ($this->_arrDocument as $key => $property)	{
+				if(		false ==  array_key_exists($key, $this->_arrRequirements)
+					&&  false === array_search($key, $this->_arrSpecialKeys))
+					throw new Mongo_Exception(sprintf(Mongo_Exception::ERROR_CLOSED_DOCUMENT, $key));
+			}
+		$this->_arrDocument[self::FIELD_TYPE]	= get_class($this);
 		return $this->_arrDocument;
 	}
 	

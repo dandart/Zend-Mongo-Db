@@ -6,7 +6,7 @@
  * @license    
  * @author     	Tim Langley
  */
-class Mongo_Reference {
+class Mongo_Type_Reference 									{
 /*	public static function create( string $collection , mixed $id [, string $database ] )
 	public static function get($mixedValue, $arrReference)	{
 		/**

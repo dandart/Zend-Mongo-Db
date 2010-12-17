@@ -98,11 +98,11 @@ class Mongo_Collection implements Countable											{
 		 *	@purpose:	
 		 * 	@param:		$query 	Array array(field => Value)
 		 *	@param:		$fields	Array array(A,B,C) - the fields to return
-		 *	@return:	returns Mongo_DocumentIterator
+		 *	@return:	returns Mongo_Document_Iterator
 		 */
 		if(null === $query || null === $fields)
 			throw new Mongo_Exception(Mongo_Exception::ERROR_MISSING_VALUES);
-		return new Mongo_DocumentIterator($this->raw_mongoCollection()->find($query, $fields), $this);
+		return new Mongo_Document_Iterator($this->raw_mongoCollection()->find($query, $fields), $this);
 	}
 	public  function findOne($query = array(), $fields = array())					{
 		/**
@@ -156,19 +156,18 @@ class Mongo_Collection implements Countable											{
 		 */
 		return new Mongo_Db($this->getDatabaseName());
 	}
-//@todo:		Maybe we should restrict this to being a Mongo_Document ?
-	public  function insert($arrInsert, $bSafe = true)								{
+	public  function insert(Mongo_Document $mongoDocument, $bSafe = true)			{
 		/**
 		 *	@purpose:	Inserts a query into the database
-		 *	@param:		$arrInsert	- php array to serialize
+		 *	@param:		$mongoDocument - the document to be inserted
 		 *	@param:		$bSafe		- true (default) => it will wait for success before returning
 		 *	@return:	array of the data returned (typically this includes a MongoId field)
 		 *
-* 	@todo:		Maybe we should restrict this to being a Mongo_Document ?
 		 */
 		$options["safe"]	= $bSafe;
-		$this->raw_mongoCollection()->insert($arrInsert, $options);
-		return $arrInsert;
+		$arrDocument		= $mongoDocument->export();
+		$this->raw_mongoCollection()->insert($arrDocument, $options);
+		return $mongoDocument;
 	}
 	public  function save(Mongo_Document $mongoDocument, $bSafe = true)				{
 		/**
@@ -183,16 +182,6 @@ class Mongo_Collection implements Countable											{
 		if($mongoDocument->getCollectionName() 	!= $this->getCollectionName())
 			throw new Mongo_Exception(Mongo_Exception::ERROR_DOCUMENT_WRONG_COLLECTION);
 		//Now check that the Required parameters are all valid
-		
-		// make sure required properties are not empty
-		$requiredProperties = $mongoDocument->getPropertiesWithRequirement('Required');
-		foreach ($requiredProperties as $property)									{
-			if (   !isset($arrDocument[$property]) 
-				|| (is_array($arrDocument[$property]) 
-					&& empty($arrDocument[$property]))) 							{
-				throw new Mongo_Exception("Property '{$property}' is required and must not be null.");
-			}
-		}
 				
 		$options["safe"]	= $bSafe;
 		$this->raw_mongoCollection()->save($arrDocument, $options);

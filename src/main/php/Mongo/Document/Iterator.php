@@ -7,7 +7,7 @@
  * @author     Tim Langley
  */
 
-class Mongo_DocumentIterator implements OuterIterator, Countable					{
+class Mongo_Document_Iterator implements OuterIterator, Countable					{
 	private	$_cursor 				= null;	//This is the MongoCursor
 	private	$_Mongo_Collection		= null;	//This is the Mongo_Collection
 	

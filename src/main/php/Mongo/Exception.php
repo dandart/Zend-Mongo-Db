@@ -8,6 +8,8 @@
  */
 class Mongo_Exception extends Exception	{
 	const ERROR_ALREADY_SAVED				= "Can't create this document has already been saved";
+	const ERROR_ARRAY_WRONG_TYPE			= "The saved document is of the wrong class";
+	const ERROR_CLOSED_DOCUMENT				= "This is a closed document. %s isn't in the requirements";
 	const ERROR_COLLECTION_NULL				= "Collection parameter is empty";
 	const ERROR_COLLECTION_WRONG_COLLECTION	= "Integrity error - this collection doesn't belong in this collection";
 	const ERROR_COLLECTION_WRONG_DATABASE	= "Integrity error - this collection doesn't belong in this database";
@@ -22,5 +24,6 @@ class Mongo_Exception extends Exception	{
 	const ERROR_MUST_SAVE_FIRST				= "Must save the document first";
 	const ERROR_NOT_IMPLEMENTED				= "Not implemented";
 	const ERROR_NOT_NULL					= "Value can't be empty";
+	const ERROR_PROPERTY_REQUIRED			= "Property '{%s}' is required and must not be null.";
 	const ERROR_READ_ONLY					= "Read Only";
 }

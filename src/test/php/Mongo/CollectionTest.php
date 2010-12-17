@@ -55,8 +55,9 @@ class Mongo_CollectionTest extends PHPUnit_Framework_TestCase	{
 		$intNoCollections	= $this->_dbMongo->getCollections();
 		$this->assertEquals(0, count($intNoCollections));
 		
-		$arrDocument		= array("key" => "value");
-		$arrReturn			= $collTest->insert($arrDocument);
+		$mongoDocument		= new Mongo_Document(null, $collTest);
+		$mongoDocument->key	= "value";
+		$arrReturn			= $collTest->insert($mongoDocument);
 		$this->assertEquals("value", 	$arrReturn["key"]);
 		//Note: Creating a collection is a Lazy exercise (ie line 43 showed there were NO collections)
 		$intNoCollections	= $this->_dbMongo->getCollections();
@@ -76,7 +77,8 @@ class Mongo_CollectionTest extends PHPUnit_Framework_TestCase	{
 		$collTest			= $this->_dbMongo->getCollection($strTestCollection);
 		$this->assertEquals($strTestCollection, $collTest->getCollectionName());
 		
-		$arrReturn			= $collTest->insert($arrDocument);
+		$mongoDocument		= new Mongo_Document($arrDocument, $collTest);
+		$arrReturn			= $collTest->insert($mongoDocument);
 		$this->assertEquals("value", 	$arrReturn["string"]);
 		
 		$docMongo			= $collTest->findOne();
@@ -89,7 +91,8 @@ class Mongo_CollectionTest extends PHPUnit_Framework_TestCase	{
 		$collTest			= $this->_dbMongo->getCollection($strTestCollection);
 		$this->assertEquals($strTestCollection, $collTest->getCollectionName());
 		
-		$arrReturn			= $collTest->insert($arrDocument);
+		$mongoDocument		= new Mongo_Document($arrDocument, $collTest);
+		$arrReturn			= $collTest->insert($mongoDocument);
 		$this->assertEquals("value", 	$arrReturn["key"]);
 		
 		$cursor				= $collTest->find();
@@ -102,10 +105,12 @@ class Mongo_CollectionTest extends PHPUnit_Framework_TestCase	{
 		$collTest			= $this->_dbMongo->getCollection($strTestCollection);
 		$this->assertEquals($strTestCollection, $collTest->getCollectionName());
 		
-		$arrReturn			= $collTest->insert($arrDocument);
+		$mongoDocument		= new Mongo_Document($arrDocument, $collTest);
+		$arrReturn			= $collTest->insert($mongoDocument);
 		$this->assertEquals("value", 	$arrReturn["key"]);
 		
-		$arrReturn			= $collTest->insert($arrDocument2);
+		$mongoDocument		= new Mongo_Document($arrDocument2, $collTest);
+		$arrReturn			= $collTest->insert($mongoDocument);
 		$this->assertEquals("value2", 	$arrReturn["key2"]);
 		
 		$cursor				= $collTest->find();
@@ -118,15 +123,16 @@ class Mongo_CollectionTest extends PHPUnit_Framework_TestCase	{
 		$collTest			= $this->_dbMongo->getCollection($strTestCollection);
 		$this->assertEquals($strTestCollection, $collTest->getCollectionName());
 		
-		$arrReturn			= $collTest->insert($arrDocument);
+		$mongoDocument		= new Mongo_Document($arrDocument, $collTest);
+		$arrReturn			= $collTest->insert($mongoDocument);
 		$this->assertEquals("value", 	$arrReturn["key"]);
 		
-		$arrReturn			= $collTest->insert($arrDocument2);
+		$mongoDocument		= new Mongo_Document($arrDocument2, $collTest);
+		$arrReturn			= $collTest->insert($mongoDocument);
 		$this->assertEquals("value2", 	$arrReturn["key2"]);
 		
 		$cursor				= $collTest->find();
 		$this->assertEquals(2,			count($cursor));
-		
 		
 		$cursor				= $collTest->find(array("key" => "value"));
 		$this->assertEquals(1,			count($cursor));
@@ -137,7 +143,8 @@ class Mongo_CollectionTest extends PHPUnit_Framework_TestCase	{
 		$collTest			= $this->_dbMongo->getCollection($strTestCollection);
 		$this->assertEquals($strTestCollection, $collTest->getCollectionName());
 		
-		$arrReturn			= $collTest->insert($arrDocument);
+		$mongoDocument		= new Mongo_Document($arrDocument, $collTest);
+		$arrReturn			= $collTest->insert($mongoDocument);
 		$this->assertEquals("value", 	$arrReturn["key"]);
 	}
 	public function testFAIL_insert_twice()						{
@@ -146,13 +153,15 @@ class Mongo_CollectionTest extends PHPUnit_Framework_TestCase	{
 		$collTest			= $this->_dbMongo->getCollection($strTestCollection);
 		$this->assertEquals($strTestCollection, $collTest->getCollectionName());
 		
-		$arrReturn			= $collTest->insert($arrDocument);
+		$mongoDocument		= new Mongo_Document($arrDocument, $collTest);
+		$arrReturn			= $collTest->insert($mongoDocument);
 		$this->assertEquals("value", 	$arrReturn["key"]);
 		
 		try 													{
-			$arrReturn			= $collTest->insert($arrDocument);
+			$collTest->insert($mongoDocument);
+			$this->fail("Exception expected");
 		} catch (MongoCursorException $e) {
-			$this->assertEquals("E11000 duplicate key error index: testCANDDi.testCollection.\$_id_  dup key: { : ObjectId('".$arrReturn["_id"]."') }", $e->getMessage());
+			$this->assertEquals("E11000 duplicate key error index: testMongo.testCollection.\$_id_  dup key: { : ObjectId('".$arrReturn["_id"]."') }", $e->getMessage());
 		}
 	}
 }
