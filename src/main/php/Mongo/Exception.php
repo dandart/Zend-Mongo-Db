@@ -27,4 +27,5 @@ class Mongo_Exception extends Exception	{
 	const ERROR_PROPERTY_REQUIRED			= "Property '{%s}' is required and must not be null.";
 	const ERROR_READ_ONLY					= "Read Only";
 	const ERROR_REQUIREMENT_NOT_EXIST		= "Requirement doesn't exist for '{%s}'";
+	const ERROR_UNKNOWN						= "An unknown error has occurred";
 }

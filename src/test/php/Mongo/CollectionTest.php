@@ -20,60 +20,59 @@ class Mongo_CollectionTest extends PHPUnit_Framework_TestCase	{
 	const	TEST_DATABASE	= "testMongo";
 	
 	private $_connMongo		= null;
-	private $_dbMongo		= null;
 	
 	public function setUp()										{
 		//Before we do anything we should drop any pre-existing test databases
-		$this->_connMongo	= new Mongo_Connection();
-		$this->_dbMongo		= new Mongo_Db(self::TEST_DATABASE, $this->_connMongo);
-		$arrCollections		= $this->_dbMongo->getCollections();
+		$config			 	= new Zend_Config_Ini(MONGO_TEST_PATH.'mongo.ini', APPLICATION_ENV);
+		$this->_connMongo	= new Mongo_Connection($config->mongo);
+		$this->_connMongo->setDatabase(self::TEST_DATABASE);
+		
+		$arrCollections		= $this->_connMongo->getCollections();
 		foreach($arrCollections AS $mongoCollection)
 			$mongoCollection->drop();
 	}
 	//__construct
-	public function testFAIL_construct_wrongVal()				{
+	public function testFAIL_construct_wrongCollection()		{
 		try 													{
 			$colTest		= new testCollection("FAILURE_ITS_A_STRING");
 			$this->fail("Exception expected");
 		} catch (Mongo_Exception $e)							{
-			$this->assertEquals(Mongo_Exception::ERROR_MISSING_VALUES, $e->getMessage());
+			$this->assertEquals(Mongo_Exception::ERROR_COLLECTION_WRONG_COLLECTION, $e->getMessage());
 		}
 	}
-	public function testFAIL_construct_wrongObject()			{
+	public function testSUCCEED_construct_noConn()				{
+		$coln				= new Mongo_Collection("testCollection");
+		$this->assertFalse($coln->isConnected());
+	}
+	public function testFAIL_construct_Conn_wrongCollection()	{
 		try 													{
-			$object			= (object)"Tim";
-			$colTest		= new testCollection($object);
+			$coln				= new Mongo_Collection("testCollection", $this->_connMongo->getrawCollection("wrongCollection"));
 			$this->fail("Exception expected");
 		} catch (Mongo_Exception $e)							{
-			$this->assertEquals(Mongo_Exception::ERROR_MISSING_VALUES, $e->getMessage());
+			$this->assertEquals(Mongo_Exception::ERROR_COLLECTION_WRONG_COLLECTION, $e->getMessage());
 		}
 	}
-	public function testSUCCEED_construct_null()				{
-		$colTest			= new testCollection();
-		$this->assertEquals("testCollection", 					get_class($colTest));
-		$this->assertEquals(testCollection::COLLECTION_TEST, 	$colTest->getCollectionName());
-		$this->assertEquals(Mongo_CollectionTest::TEST_DATABASE,$colTest->getDatabaseName());
-	}
-	public function testSUCCEED_construct_Connection()			{
-		$colTest			= new testCollection($this->_connMongo);
-		$this->assertEquals("testCollection", 					get_class($colTest));
-		$this->assertEquals(testCollection::COLLECTION_TEST, 	$colTest->getCollectionName());
-		$this->assertEquals(Mongo_CollectionTest::TEST_DATABASE,$colTest->getDatabaseName());
-	}
-	public function testSUCCEED_construct_Database()			{
-		$colTest			= new testCollection($this->_dbMongo);
-		$this->assertEquals("testCollection", 					get_class($colTest));
-		$this->assertEquals(testCollection::COLLECTION_TEST, 	$colTest->getCollectionName());
-		$this->assertEquals($this->_dbMongo->__toString(),$colTest->getDatabaseName());
+	public function testSUCCEED_construct_Conn()				{
+		$coln				= new Mongo_Collection("testCollection", $this->_connMongo->getrawCollection("testCollection"));
+		$this->assertFalse($coln->isConnected());
 	}
 	//__toString()
 	public function testSUCCEED_toString()						{
-		$colTest			= new testCollection();
-		$this->assertEquals("testCollection", 					get_class($colTest));
-		$strFullName		= sprintf("%s.%s", self::TEST_DATABASE, testCollection::COLLECTION_TEST);
-		$this->assertEquals($strFullName, 						$colTest->__toString());
-		$this->assertEquals($strFullName, 						(string)$colTest);
+		$coln				= new Mongo_Collection("testCollection");
+		$this->assertEquals("Mongo_Collection", 	get_class($coln));
+		$this->assertEquals("testCollection", 		$coln->__toString());
+		$this->assertEquals("testCollection", 		(string)$coln);
 	}
+	//setConnection & isConnected
+	public function testSUCCEED_isConnected()					{
+		$coln				= new Mongo_Collection("testCollection");
+		$this->assertFalse($coln->isConnected());
+		$coln->setConnection($this->_connMongo);
+		$this->assertFalse($coln->isConnected());
+		$coln->connect();
+		$this->assertTrue($coln->isConnected());
+	}
+	
 	//createDocument
 	public function testSUCCEED_create_MongoDocument()			{
 		$colTest			= new testCollection();
@@ -88,18 +87,20 @@ class Mongo_CollectionTest extends PHPUnit_Framework_TestCase	{
 		$mongoDocument		= $colTest->createDocument();
 		$this->assertEquals("testCollection_Document",			get_class($mongoDocument));
 	}
+
 	//decodeReference
+
 
 	//drop
 	public function testSUCCEED_drop()							{
-		$intNoCollections	= $this->_dbMongo->getCollections();
+		$intNoCollections	= $this->_connMongo->getCollections();
 		$this->assertEquals(0, count($intNoCollections));
 		
 		$strTestCollection	= "testCollection";
-		$collTest			= $this->_dbMongo->getCollection($strTestCollection);
+		$collTest			= $this->_connMongo->getCollection($strTestCollection);
 		$this->assertEquals($strTestCollection, $collTest->getCollectionName());
 		
-		$intNoCollections	= $this->_dbMongo->getCollections();
+		$intNoCollections	= $this->_connMongo->getCollections();
 		$this->assertEquals(0, count($intNoCollections));
 		
 		$mongoDocument		= new Mongo_Document(null, $collTest);
@@ -107,19 +108,19 @@ class Mongo_CollectionTest extends PHPUnit_Framework_TestCase	{
 		$arrReturn			= $collTest->insert($mongoDocument);
 		$this->assertEquals("value", 	$arrReturn["key"]);
 		//Note: Creating a collection is a Lazy exercise (ie line 43 showed there were NO collections)
-		$intNoCollections	= $this->_dbMongo->getCollections();
+		$intNoCollections	= $this->_connMongo->getCollections();
 		$this->assertEquals(1, count($intNoCollections));
 		
 		$return 			= $collTest->drop();
 		
-		$intNoCollections	= $this->_dbMongo->getCollections();
+		$intNoCollections	= $this->_connMongo->getCollections();
 		$this->assertEquals(0, count($intNoCollections));
 	}
 	//find
 	public function testSUCCEED_findAll_One()					{
 		$strTestCollection	= "testCollection";
 		$arrDocument		= array("key" => "value");
-		$collTest			= $this->_dbMongo->getCollection($strTestCollection);
+		$collTest			= $this->_connMongo->getCollection($strTestCollection);
 		$this->assertEquals($strTestCollection, $collTest->getCollectionName());
 		
 		$mongoDocument		= new Mongo_Document($arrDocument, $collTest);
@@ -133,7 +134,7 @@ class Mongo_CollectionTest extends PHPUnit_Framework_TestCase	{
 		$strTestCollection	= "testCollection";
 		$arrDocument		= array("key"  => "value");
 		$arrDocument2		= array("key2" => "value2");
-		$collTest			= $this->_dbMongo->getCollection($strTestCollection);
+		$collTest			= $this->_connMongo->getCollection($strTestCollection);
 		$this->assertEquals($strTestCollection, $collTest->getCollectionName());
 		
 		$mongoDocument		= new Mongo_Document($arrDocument, $collTest);
@@ -151,7 +152,7 @@ class Mongo_CollectionTest extends PHPUnit_Framework_TestCase	{
 		$strTestCollection	= "testCollection";
 		$arrDocument		= array("key"  => "value");
 		$arrDocument2		= array("key2" => "value2");
-		$collTest			= $this->_dbMongo->getCollection($strTestCollection);
+		$collTest			= $this->_connMongo->getCollection($strTestCollection);
 		$this->assertEquals($strTestCollection, $collTest->getCollectionName());
 		
 		$mongoDocument		= new Mongo_Document($arrDocument, $collTest);
@@ -175,7 +176,7 @@ class Mongo_CollectionTest extends PHPUnit_Framework_TestCase	{
 									,	"integer"	=> 1
 									,	"array"		=> array("array_string" => "array_value")
 									);
-		$collTest			= $this->_dbMongo->getCollection($strTestCollection);
+		$collTest			= $this->_connMongo->getCollection($strTestCollection);
 		$this->assertEquals($strTestCollection, $collTest->getCollectionName());
 		
 		$mongoDocument		= new Mongo_Document($arrDocument, $collTest);
@@ -186,11 +187,15 @@ class Mongo_CollectionTest extends PHPUnit_Framework_TestCase	{
 		$this->assertEquals("value", 			$docMongo->string);
 		$this->assertEquals($arrReturn["_id"], 	$docMongo->_id);
 	}
+	//getCollectionClass
+	//getCollectionName
+	//getDatabaseName
+	
 	//insert
 	public function testSUCCEED_insert()						{
 		$strTestCollection	= "testCollection";
 		$arrDocument		= array("key" => "value");
-		$collTest			= $this->_dbMongo->getCollection($strTestCollection);
+		$collTest			= $this->_connMongo->getCollection($strTestCollection);
 		$this->assertEquals($strTestCollection, $collTest->getCollectionName());
 		
 		$mongoDocument		= new Mongo_Document($arrDocument, $collTest);
@@ -200,7 +205,7 @@ class Mongo_CollectionTest extends PHPUnit_Framework_TestCase	{
 	public function testFAIL_insert_twice()						{
 		$strTestCollection	= "testCollection";
 		$arrDocument		= array("key" => "value");
-		$collTest			= $this->_dbMongo->getCollection($strTestCollection);
+		$collTest			= $this->_connMongo->getCollection($strTestCollection);
 		$this->assertEquals($strTestCollection, $collTest->getCollectionName());
 		
 		$mongoDocument		= new Mongo_Document($arrDocument, $collTest);
@@ -214,12 +219,17 @@ class Mongo_CollectionTest extends PHPUnit_Framework_TestCase	{
 			$this->assertEquals("E11000 duplicate key error index: testMongo.testCollection.\$_id_  dup key: { : ObjectId('".$arrReturn["_id"]."') }", $e->getMessage());
 		}
 	}
+	//save
+	
+	//addtoarray
+	
+	
 	//count
 	public function testSUCCEED_count()							{
 		$strTestCollection	= "testCollection";
-		$collTest			= $this->_dbMongo->getCollection($strTestCollection);
+		$collTest			= $this->_connMongo->getCollection($strTestCollection);
 		$this->assertEquals($strTestCollection, $collTest->getCollectionName());
 		$this->assertEquals(1, count($collTest));
 	}
-	
+
 }

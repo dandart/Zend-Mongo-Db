@@ -20,18 +20,14 @@ class Mongo_DocumentTest extends PHPUnit_Framework_TestCase		{
 	const	TEST_DATABASE	= "testMongo";
 	const	TEST_COLLECTION	= "testDocumentTest";
 	
-	private $_colMongo		= null;
 	private $_connMongo		= null;
-	private $_dbMongo		= null;
 	
 	public function setUp()										{
 		//Before we do anything we should drop any pre-existing test databases
-		$this->_connMongo	= new Mongo_Connection();
-		$this->_dbMongo		= new Mongo_Db(self::TEST_DATABASE, $this->_connMongo);
-		$arrCollections		= $this->_dbMongo->getCollections();
-		foreach($arrCollections AS $mongoCollection)
-			$mongoCollection->drop();
-		$this->_colMongo	= $this->_dbMongo->getCollection(self::TEST_COLLECTION);
+		$config			 	= new Zend_Config_Ini(MONGO_TEST_PATH.'mongo.ini', APPLICATION_ENV);
+		$this->_connMongo	= new Mongo_Connection($config->mongo);
+		$this->_connMongo->setDatabase(self::TEST_DATABASE);
+		$this->_connMongo->executeFile(MOCK_DB_PATH."/Mongo/DocumentTest.js");
 	}
 	//construct
 	public function testSUCCEED_construct_null()				{
@@ -47,15 +43,11 @@ class Mongo_DocumentTest extends PHPUnit_Framework_TestCase		{
 		$this->assertEquals("Data",					$arrDocument["More"]);
 		$this->assertEquals("Langley",				$arrDocument["Tim"]);
 	}
-	public function testSUCCEED_construct_data_conn()			{
-		$arrData			= array("Tim" => "Langley", "More" => "Data");
-		$mongoDocument		= new Mongo_Document($arrData, $this->_colMongo);
-		$arrDocument		= $mongoDocument->export();
-		$this->assertEquals("Mongo_Document", 		$arrDocument[Mongo_Document::FIELD_TYPE]);
-		$this->assertEquals("Data",					$arrDocument["More"]);
-		$this->assertEquals("Langley",				$arrDocument["Tim"]);
+	//setConnection
+	public function testSUCCEED_construct_setConnection()		{
+		$mongoDocument		= new Mongo_Document();
+		$mongoDocument->setConnection($this->_connMongo);
 		$this->assertEquals(self::TEST_DATABASE,	$mongoDocument->getDatabaseName());
-		$this->assertEquals(self::TEST_COLLECTION,	$mongoDocument->getCollectionName());
 	}
 	//addItemToArray
 	
@@ -99,5 +91,31 @@ class Mongo_DocumentTest extends PHPUnit_Framework_TestCase		{
 		
 	}
 
-
+	//Test different types of __get
+	public function testSUCEED_get_data()						{
+		$this->markTestSkipped();
+	}
+	public function testSUCEED_get_DBRef()						{
+		$this->markTestSkipped();
+	}
+	public function testSUCEED_get_DBRef_null()					{
+		$this->markTestSkipped();
+	}
+	public function testSUCEED_get_DBSet()						{
+		$this->markTestSkipped();
+	}
+	public function testSUCEED_get_DBSet_data()					{
+		$this->markTestSkipped();
+	}
+	public function testSUCEED_get_DBSet_DBRef_null()			{
+		$this->markTestSkipped();
+	}
+	public function testSUCEED_get_DBSet_DBRef()				{
+		$colAccountUser		= $this->_connMongo->getCollection("Account_Users");
+		$docAccountUser		= $colAccountUser->findOne();
+		$this->assertEquals("Tim", $docAccountUser->FirstName);
+		
+		$docAccount			= $docAccountUser->Accounts[0];
+		$this->assertEquals("lcfcomputers", $docAccount->AccountURL);
+	}
 }

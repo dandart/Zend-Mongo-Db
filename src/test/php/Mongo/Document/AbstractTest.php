@@ -39,16 +39,16 @@ class Mongo_Document_AbstractTest extends PHPUnit_Framework_TestCase	{
 	
 	private $_colMongo		= null;
 	private $_connMongo		= null;
-	private $_dbMongo		= null;
 	
 	public function setUp()												{
 		//Before we do anything we should drop any pre-existing test databases
-		$this->_connMongo	= new Mongo_Connection();
-		$this->_dbMongo		= new Mongo_Db(self::TEST_DATABASE, $this->_connMongo);
-		$arrCollections		= $this->_dbMongo->getCollections();
+		$config			 	= new Zend_Config_Ini(MONGO_TEST_PATH.'mongo.ini', APPLICATION_ENV);
+		$this->_connMongo	= new Mongo_Connection($config->mongo);
+		$this->_connMongo->setDatabase(self::TEST_DATABASE);
+		$arrCollections		= $this->_connMongo->getCollections();
 		foreach($arrCollections AS $mongoCollection)
 			$mongoCollection->drop();
-		$this->_colMongo	= $this->_dbMongo->getCollection(self::TEST_COLLECTION);
+		$this->_colMongo	= $this->_connMongo->getCollection(self::TEST_COLLECTION);
 	}
 	//testConstruct
 	public function testSUCCEED_construct_null()						{

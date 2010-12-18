@@ -9,22 +9,14 @@
 
 class Mongo_Document_Iterator implements OuterIterator, Countable					{
 	private	$_cursor 				= null;	//This is the MongoCursor
-	private	$_Mongo_Collection		= null;	//This is the Mongo_Collection
+	private $_Mongo_Connection		= null; //This is the Mongo_Connection
 	
-	public function __construct(MongoCursor $cursor, Mongo_Collection $mongoCollection = null) {
+	public function __construct(MongoCursor $cursor, Mongo_Connection $mongoConn)	{
 		$this->_cursor 				= $cursor;
-		$this->_Mongo_Collection 	= $mongoCollection;
+		$this->_Mongo_Connection	= $mongoConn;
 	}
-	private function getDocumentClass($arrDocument = null)							{
-		/**
-		 *	@purpose:	Works out what type of Document class should be created
-		 *				NOTE: 	This checks if an existing document is trying to be "recreated" and if so it the _Type is valid
-		 *				SECOND:	This checks if the collection has a default type
-		 */
-		$strDefault	= isset($this->_Mongo_Collection)?
-							$this->_Mongo_Collection->getDefaultDocumentType():Mongo_Mongo_Collection::DEFAULT_DOCUMENT_TYPE;
-		return Mongo_Document_Abstract::getDocumentClass($strDefault, $arrDocument);
-	}
+	
+	//Implements OuterIterator
 	public function getInnerIterator()												{
 		/**
 		 *	@purpose: Returns the MongoCursor
@@ -45,8 +37,11 @@ class Mongo_Document_Iterator implements OuterIterator, Countable					{
 		 *	@todo:		Probably should replace this with returning a Mongo_Document
 		 */
 		$arrDocument	= $this->getInnerIterator()->current();
-		$classDocument	= $this->getDocumentClass($arrDocument);
-		return new $classDocument($arrDocument, $this->_Mongo_Collection);
+		$classDocument	= Mongo_Document_Abstract::getDocumentClass($strDefault, $arrDocument);
+		$docDocument	= new $classDocument($arrDocument);
+		if($this->_Mongo_Connection)
+			$docDocument->setConnection($this->_Mongo_Connection);
+		return $docDocument;
 	}	
 	public function getNext()														{
 		$this->next();
@@ -64,12 +59,15 @@ class Mongo_Document_Iterator implements OuterIterator, Countable					{
 	public function valid()															{
 		return $this->getInnerIterator()->valid();
 	}
-	public function count()															{
-		return $this->getInnerIterator()->count();
-	}
 	public function info()															{
 		return $this->getInnerIterator()->info();
 	}
+	
+	//Implements Countable
+	public function count()															{
+		return $this->getInnerIterator()->count();
+	}
+	
 	public function __call($method, $arguments)										{
 		/**
 		 *	@purpose:	To save implementing every method ;-) this forwards to the raw Cursor

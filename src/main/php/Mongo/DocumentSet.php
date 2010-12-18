@@ -9,21 +9,7 @@
  */
 final class Mongo_DocumentSet extends Mongo_Document_Abstract implements Iterator, Countable{
 	private		$_intIteratorPosition	= 0;
-												
-	protected 	function mongoCollection()													{
-		/**
-		 *	@purpose: 	This handles the mongoCollection parameter
-		 *	@return:	
-		 */
-		if(!$this->_Mongo_Collection)
-			throw new Mongo_Exception(Mongo_Exception::ERROR_COLLECTION_NULL);
-
-		return $this->_Mongo_Collection;
-	}
-	public 		function __construct($arrDocument, Mongo_Collection $mongoCollection = null){
-		parent::__construct($arrDocument);
-		$this->_Mongo_Collection		= $mongoCollection;
-	}
+	
 	public 		function __get($name)														{
 		/**
 		 *	@purpose:	In a DocumentSet we can only return a _SpecialKey as a property & only when set!
@@ -71,4 +57,5 @@ final class Mongo_DocumentSet extends Mongo_Document_Abstract implements Iterato
 		}
 		return true;
 	}
+
 }

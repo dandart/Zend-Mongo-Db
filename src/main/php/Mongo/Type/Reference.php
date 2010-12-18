@@ -6,16 +6,18 @@
  * @license    
  * @author     	Tim Langley
  */
-class Mongo_Type_Reference 									{
-/*	public static function create( string $collection , mixed $id [, string $database ] )
-	public static function get($mixedValue, $arrReference)	{
+class Mongo_Type_Reference 													{
+	public static function create( string $collection , $id, $strDatabase)	{
+		
+	}
+	public static function get($mixedValue, $arrReference)					{
 		/**
 		 *	@purpose: 	Decodes a DBReference
-		 *	@param:		$mixedValue - this must be either a Mongo_Collection, Mongo_Db (or must extend from them)
-		 * /
+		 *	@param:		
+		 */
 		
-	}*/
-	public static function isRef($ref)						{
+	}
+	public static function isRef($ref)										{
 		return MongoDBRef::isRef($ref);
 	}
 }

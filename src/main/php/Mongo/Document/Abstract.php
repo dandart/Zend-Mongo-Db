@@ -8,7 +8,7 @@
  * @author     	Tim Langley
  */
 
-abstract class Mongo_Document_Abstract implements ArrayAccess						{
+abstract class Mongo_Document_Abstract implements ArrayAccess, Mongo_Connection_Interface {
 	const		FIELD_CLOSED			= "_Closed";	//Holds true | false 
 														//(if true then Properties are limited to _requirements)
 	const		FIELD_COLLECTION		= "_ref:Collection";
@@ -24,8 +24,15 @@ abstract class Mongo_Document_Abstract implements ArrayAccess						{
 	const		REQ_OPTIONAL			= "Optional";
 	const		REQ_REQUIRED			= "Required";
 	
-	const		TYPE_MONGO_DOCUMENT		= "Mongo_Document";
-	const		TYPE_MONGO_DOCUMENT_SET	= "Mongo_DocumentSet";
+	/****
+	 **	These are the parameters that can (optionally be overridden in the child classes)
+	 ****/
+	protected 	$_strDatabase 			= null;
+	protected 	$_strCollection			= null;
+	protected	$_classCollectionType	= Mongo_Connection::TYPE_DEFAULT_COLLECTION;
+	/****
+	 **	END
+	 ****/
 	
 	//This holds a cached array of ZendRequirements (either Validators or Filters)
 	//This is static so that we only load these once per request and they're live for all documents
@@ -39,17 +46,53 @@ abstract class Mongo_Document_Abstract implements ArrayAccess						{
 												, self::FIELD_TYPE
 												);
 	
-	protected	$_Mongo_Collection		= null;	//Holds the Mongo_Collection that this Document belongs to
-												//However - don't use this directly - use $this->mongoCollection() for safety
-	
+	protected 	$_Mongo_Connection;
+	private 	$_Mongo_Collection		= null;	//Holds the Mongo_Collection object
+												//Recommend accessing this through $this->mongoCollection() through
+												
 	private 	$_arrDocument			= null;
 	protected	$_arrRequirements		= array();
 	protected	$_bClosed				= false;
-	
+		
+	protected	function mongoCollection()											{
+		/**
+		 *	@purpose: 	This handles the mongoCollection parameter (if it's null then this tries to create from the connection...)
+		 *	@return:	class Mongo_Collection (or more specifically the class in $_classCollectionType)
+		 */
+		if($this->_Mongo_Collection)
+			return $this->_Mongo_Collection;
+		
+		//If there's no existing collection then lets see if we can create one!
+		if(is_null($this->_strCollection))
+			throw new Mongo_Exception(Mongo_Exception::ERROR_COLLECTION_NULL);
+		
+		if(is_null($this->_Mongo_Connection))										{
+			//Ok - we don't have a connection so see if we can load the default one!
+			if(is_null($this->_strDatabase))
+				throw new Mongo_Exception(Mongo_Exception::ERROR_MISSING_DATABASE);
+			if(is_null(Mongo_Connection::getDefaultConnectionString()))
+				throw new Mongo_Exception(Mongo_Exception::ERROR_CONNECTION_NULL);
+			$this->_Mongo_Connection 		= new Mongo_Connection();
+			$this->_Mongo_Connection->setDatabase($this->_strDatabase);
+		}
+		
+		$this->_Mongo_Collection	= $this->_Mongo_Connection->getCollection($this->_strCollection, $this->_classCollectionType);
+		return $this->_Mongo_Collection;
+	}
 	public 		function __construct($arrDocument = null)							{
 		$this->setArrDocument($arrDocument);
 		//Clean up the requirements
 		$this->_arrRequirements			= $this->makeRequirementsTidy($this->_arrRequirements);
+	}
+	private		function createDocument($classDocument, $arrData)					{
+		$docAbstract		= new $classDocument($arrData);
+		if($this->_Mongo_Connection)
+			$docAbstract->setConnection($this->_Mongo_Connection);
+		if($this->_strDatabase)
+			$docAbstract->setDatabaseName($this->_strDatabase);
+		if($this->_strCollection)
+			$docAbstract->setCollectionName($this->_strCollection);
+		return $docAbstract;
 	}
 	protected 	function setArrDocument($arrDocument)								{
 		if(!$arrDocument)
@@ -79,14 +122,17 @@ abstract class Mongo_Document_Abstract implements ArrayAccess						{
 		if(!is_array($data))														{
 			$arrRequirements 	= (isset($this->_arrRequirements[$key]))?$this->_arrRequirements[$key]:null;
 			$classDocument		= self::getDocumentClass(null, null, $arrRequirements);
-			return (!$classDocument)?$data:new $classDocument($data, $this->_Mongo_Collection);
+			
+			if(is_null($classDocument))
+				return $data;
+			return $this->createDocument($classDocument, $data);
 		}
 		//Otherwise time to go to work!
 		$bIsReference						= Mongo_Type_Reference::isRef($data);
 		if ($bIsReference) 															{
 			$document						= $this	->mongoCollection()->decodeReference($data);
 			if(!$document)
-				return $this->__set($key, null);
+				return $this->_setValue($key, null);
 			return $document;
 		}
 		
@@ -94,10 +140,11 @@ abstract class Mongo_Document_Abstract implements ArrayAccess						{
 		
 		//We try to determine the type of document
 		$arrArrayKeys	= array_keys($data);
-		$strDefault		= (0 === $arrArrayKeys[0])?self::TYPE_MONGO_DOCUMENT_SET:self::TYPE_MONGO_DOCUMENT;
+		$strDefault		= (0 === $arrArrayKeys[0])?Mongo_Connection::TYPE_MONGO_DOCUMENT_SET:Mongo_Connection::TYPE_MONGO_DOCUMENT;
 		$arrRequirements= (isset($this->_arrRequirements[$key]))?$this->_arrRequirements[$key]:null;
 		$classDocument	= self::getDocumentClass($strDefault, $data, $arrRequirements);
-		return new $classDocument($data, $this->_Mongo_Collection);
+		
+		return $this->createDocument($classDocument, $data);
 	}
 	protected	function setByName($name, $value)									{
 		/**
@@ -131,12 +178,48 @@ abstract class Mongo_Document_Abstract implements ArrayAccess						{
 			unset($this->_arrDocument[$key]);
 			return null;
 		}
-		if(self::TYPE_MONGO_DOCUMENT	== gettype($value) || self::TYPE_MONGO_DOCUMENT_SET == gettype($value))
+		if(Mongo_Connection::TYPE_MONGO_DOCUMENT	== gettype($value) 
+		|| Mongo_Connection::TYPE_MONGO_DOCUMENT_SET == gettype($value))
 			//If we're trying to save (set) a Document or Document set then we should export to get the raw data
 			//Note: This will do an integrity check at this stage
 			return $this->_arrDocument[$key]	= $value->export();
 		else
 			return $this->_arrDocument[$key]	= $value;
+	}
+	
+	public  	function getCollectionName()										{
+		/**
+		 *	@purpose: Returns the name of the Collection that this document belongs to
+		 */
+		return $this->_strCollection;
+	}
+	public  	function getDatabaseName()											{
+		/**
+		 *	@purpose:	Returns the name of the database that this document belongs to
+		 */
+		return $this->_strDatabase;
+	}
+	public  	function setDatabaseName($strDatabase)								{
+		if(!$strDatabase)
+			throw new Mongo_Exception(Mongo_Exception::ERROR_MISSING_DATABASE);
+
+		if($this->_strDatabase)
+			if($strDatabase != $this->_strDatabase)
+				throw new Mongo_Exception(Mongo_Exception::ERROR_DOCUMENT_WRONG_DATABASE);
+
+		$this->_strDatabase = $strDatabase; 
+		return true;
+	}
+	public  	function setCollectionName($strCollection)							{
+		if(!$strCollection)
+			throw new Mongo_Exception(Mongo_Exception::ERROR_COLLECTION_NULL);
+			
+		if($this->_strCollection)
+			if($strCollection != $this->_strCollection)
+				throw new Mongo_Exception(Mongo_Exception::ERROR_DOCUMENT_WRONG_COLLECTION);
+
+		$this->_strCollection = $strCollection;
+		return true;
 	}
 	
 	public  	function export()													{
@@ -232,8 +315,9 @@ abstract class Mongo_Document_Abstract implements ArrayAccess						{
 		//Firstly lets check if we are dealing with a "pull out of existing object" situtation
 		if(		isset($requirements[self::FIELD_COLLECTION]) 
 			|| 	isset($requirements[self::FIELD_REFERENCE]))						{
-				if(is_null($_Mongo_Collection))
-					throw new Mongo_Exception(Mongo_Exception::ERROR_COLLECTION_NULL);
+				
+				//WE STILL HAVE TO IMPLEMENT THIS
+					throw new Mongo_Exception(Mongo_Exception::ERROR_NOT_IMPLEMENTED);
 				
 			}
 		
@@ -396,17 +480,17 @@ abstract class Mongo_Document_Abstract implements ArrayAccess						{
 		
 		if(isset($arrDocument) && isset($arrDocument[Mongo_Document::FIELD_TYPE]))
 			return class_exists($arrDocument[Mongo_Document::FIELD_TYPE])
-						?$arrDocument[Mongo_Document::FIELD_TYPE]:self::DEFAULT_DOCUMENT_TYPE;
-		if(	is_array($arrRequirements) && array_key_exists(self::TYPE_MONGO_DOCUMENT_SET, $arrRequirements))
-			return self::TYPE_MONGO_DOCUMENT_SET;
+						?$arrDocument[Mongo_Document::FIELD_TYPE]:Mongo_Connection::TYPE_MONGO_DOCUMENT;
+		if(	is_array($arrRequirements) && array_key_exists(Mongo_Connection::TYPE_MONGO_DOCUMENT_SET, $arrRequirements))
+			return Mongo_Connection::TYPE_MONGO_DOCUMENT_SET;
 			
-		if(	is_array($arrRequirements) && array_key_exists(self::TYPE_MONGO_DOCUMENT, $arrRequirements))
-			return self::TYPE_MONGO_DOCUMENT;
+		if(	is_array($arrRequirements) && array_key_exists(Mongo_Connection::TYPE_MONGO_DOCUMENT, $arrRequirements))
+			return Mongo_Connection::TYPE_MONGO_DOCUMENT;
 
 		if(is_null($strDefault))
 			return null;
 			
-		return (class_exists($strDefault))?$strDefault:self::TYPE_MONGO_DOCUMENT;
+		return (class_exists($strDefault))?$strDefault:Mongo_Connection::TYPE_MONGO_DOCUMENT;
 	}
 	
 	//Implements (for __get requests)
@@ -431,6 +515,30 @@ abstract class Mongo_Document_Abstract implements ArrayAccess						{
 		$name		= (	($arrKeys && isset($arrKeys[$offset]))
 					  ||(false !== array_key_exists($offset, $this->_arrDocument)))?$arrKeys[$offset]:null;
 		return (false != array_search($name, self::$_arrSpecialKeys));
+	}
+	
+	//Implements Mongo_Connection_Interface
+	public 		function connect()													{
+		//NOTE - this is handled differently in each class - hence we're throwing error here
+		if(!$this->isConnected())
+			$this->mongoCollection();
+		return true;
+	}
+	public		function isConnected()												{
+		//NOTE - this is handled differently in each class - hence we're throwing error here
+		return is_null($this->_Mongo_Collection);
+	}
+	public 		function setConnection(Mongo_Connection $mongoConnection)			{
+		/**
+		 *	@purpose:	Sets the Connection for this document / document set
+		 */
+		if(is_null($mongoConnection))
+			return $this->_Mongo_Connection	= null;
+		
+		if(!is_null($this->_strDatabase) && $this->_strDatabase != $mongoConnection->getDatabase())
+			throw new Mongo_Exception(Mongo_Exception::ERROR_COLLECTION_WRONG_DATABASE);
+		$this->_Mongo_Connection	= $mongoConnection;
+		$this->setDatabaseName($mongoConnection->getDatabase());
 	}
 	//Implements ArrayAccess
 	public    	function offsetExists($offset)										{
