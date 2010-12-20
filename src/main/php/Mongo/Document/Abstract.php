@@ -54,29 +54,33 @@ abstract class Mongo_Document_Abstract implements ArrayAccess, Mongo_Connection_
 	protected	$_arrRequirements		= array();
 	protected	$_bClosed				= false;
 		
+	protected 	function mongoConnection()											{
+		if(!is_null($this->_Mongo_Connection))
+			return $this->_Mongo_Connection;
+		
+		//Ok - we don't have a connection so see if we can load the default one!
+		if(is_null($this->_strDatabase))
+			throw new Mongo_Exception(Mongo_Exception::ERROR_MISSING_DATABASE);
+		if(is_null(Mongo_Connection::getDefaultConnectionString()))
+			throw new Mongo_Exception(Mongo_Exception::ERROR_CONNECTION_NULL);
+		$this->_Mongo_Connection 		= new Mongo_Connection();
+		$this->_Mongo_Connection->setDatabase($this->_strDatabase);
+		return $this->_Mongo_Connection;
+	}	
 	protected	function mongoCollection()											{
 		/**
 		 *	@purpose: 	This handles the mongoCollection parameter (if it's null then this tries to create from the connection...)
 		 *	@return:	class Mongo_Collection (or more specifically the class in $_classCollectionType)
 		 */
-		if($this->_Mongo_Collection)
+		if(!is_null($this->_Mongo_Collection))
 			return $this->_Mongo_Collection;
 		
 		//If there's no existing collection then lets see if we can create one!
 		if(is_null($this->_strCollection))
 			throw new Mongo_Exception(Mongo_Exception::ERROR_COLLECTION_NULL);
 		
-		if(is_null($this->_Mongo_Connection))										{
-			//Ok - we don't have a connection so see if we can load the default one!
-			if(is_null($this->_strDatabase))
-				throw new Mongo_Exception(Mongo_Exception::ERROR_MISSING_DATABASE);
-			if(is_null(Mongo_Connection::getDefaultConnectionString()))
-				throw new Mongo_Exception(Mongo_Exception::ERROR_CONNECTION_NULL);
-			$this->_Mongo_Connection 		= new Mongo_Connection();
-			$this->_Mongo_Connection->setDatabase($this->_strDatabase);
-		}
-		
-		$this->_Mongo_Collection	= $this->_Mongo_Connection->getCollection($this->_strCollection, $this->_classCollectionType);
+		$mongoConnection	= $this->mongoConnection();
+		$this->_Mongo_Collection	= $mongoConnection->getCollection($this->_strCollection, $this->_classCollectionType);
 		return $this->_Mongo_Collection;
 	}
 	public 		function __construct($arrDocument = null)							{
@@ -84,13 +88,13 @@ abstract class Mongo_Document_Abstract implements ArrayAccess, Mongo_Connection_
 		//Clean up the requirements
 		$this->_arrRequirements			= $this->makeRequirementsTidy($this->_arrRequirements);
 	}
-	private		function createDocument($classDocument, $arrData)					{
+	private		function createDocument($classDocument, $arrData, $bSameColn = true){
 		$docAbstract		= new $classDocument($arrData);
 		if($this->_Mongo_Connection)
 			$docAbstract->setConnection($this->_Mongo_Connection);
 		if($this->_strDatabase)
 			$docAbstract->setDatabaseName($this->_strDatabase);
-		if($this->_strCollection)
+		if($bSameColn && $this->_strCollection)
 			$docAbstract->setCollectionName($this->_strCollection);
 		return $docAbstract;
 	}
@@ -120,6 +124,9 @@ abstract class Mongo_Document_Abstract implements ArrayAccess, Mongo_Connection_
 		 */
 		$data	= (isset($this->_arrDocument[$key]))?$this->_arrDocument[$key]:null;
 		if(!is_array($data))														{
+			if(self::FIELD_ID == $key)
+				return (string)$data;
+			
 			$arrRequirements 	= (isset($this->_arrRequirements[$key]))?$this->_arrRequirements[$key]:null;
 			$classDocument		= self::getDocumentClass(null, null, $arrRequirements);
 			
@@ -130,14 +137,15 @@ abstract class Mongo_Document_Abstract implements ArrayAccess, Mongo_Connection_
 		//Otherwise time to go to work!
 		$bIsReference						= Mongo_Type_Reference::isRef($data);
 		if ($bIsReference) 															{
-			$document						= $this	->mongoCollection()->decodeReference($data);
-			if(!$document)
+			$mongoConnection				= $this->mongoConnection();
+			$arrDocument					= $mongoConnection->decodeReference($data, $this->getDatabaseName());
+			if(!$arrDocument)
 				return $this->_setValue($key, null);
-			return $document;
+				
+			$strDefault						= Mongo_Connection::TYPE_MONGO_DOCUMENT;
+			$classDocument					= self::getDocumentClass($strDefault, $data, null);
+			return 							$this->createDocument($classDocument, $arrDocument, false);
 		}
-		
-		//Ok - so it's an array (is it an embedded document or an array or embedded documents?)
-		
 		//We try to determine the type of document
 		$arrArrayKeys	= array_keys($data);
 		$strDefault		= (0 === $arrArrayKeys[0])?Mongo_Connection::TYPE_MONGO_DOCUMENT_SET:Mongo_Connection::TYPE_MONGO_DOCUMENT;

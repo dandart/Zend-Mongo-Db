@@ -102,6 +102,19 @@ class Mongo_Connection 																{
 		
 		return true;
 	}
+	public	function decodeReference($arrReference, $strDatabaseName = null)		{
+		/**
+		 *	@purpose:	This decodes a DBReference
+		 *	@param:		$arrReference = DBreference array ($id, $ref)
+		 *	@return:	null (if not found) | $arrDocument
+		 */
+		if(!Mongo_Type_Reference::isRef($arrReference))
+			return null;
+		$mongo		= new Mongo(Mongo_Connection::$_defaultConnectionString);
+		$strDatabase= is_null($strDatabaseName)?$this->p_strDatabaseName:$strDatabaseName;
+		$mongoDB	= $mongo->selectDB($strDatabase);
+		return MongoDBRef::get($mongoDB,$arrReference);
+	}
 	public  function dropDatabase($strDatabaseName 	= null)							{
 		/**
 		 *	@purpose: 	This drops the database 
@@ -146,6 +159,7 @@ class Mongo_Connection 																{
 								$strClassCollection:self::TYPE_DEFAULT_COLLECTION;
 		$colCollection	= new $classType($strCollectionName, $rawCollection);
 		$colCollection->setConnection($this);
+		$colCollection->setDatabaseName($this->getDatabase());
 		return $colCollection;
 	}
 	public  function getCollections()												{

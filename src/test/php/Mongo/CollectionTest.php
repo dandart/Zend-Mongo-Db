@@ -54,7 +54,7 @@ class Mongo_CollectionTest extends PHPUnit_Framework_TestCase	{
 	}
 	public function testSUCCEED_construct_Conn()				{
 		$coln				= new Mongo_Collection("testCollection", $this->_connMongo->getrawCollection("testCollection"));
-		$this->assertFalse($coln->isConnected());
+		$this->assertTrue($coln->isConnected());
 	}
 	//__toString()
 	public function testSUCCEED_toString()						{

@@ -32,7 +32,8 @@ class Mongo_Document extends Mongo_Document_Abstract 								{
 		 *	@param:		$bUnique	= true 	(perform a $addToSet)
 		 *							= false	(perform a $push)
 		 */
-		$this->setArrDocument($this->mongoCollection()->addToArray($this, $strElementName, $strItemToAdd, $bUnique));
+		$arrDocument	= $this->mongoCollection()->addToArray($this, $strElementName, $strItemToAdd, $bUnique);
+		$this->setArrDocument($arrDocument);
 		return true;
 	}
 	public		function createToken()												{

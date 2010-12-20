@@ -156,7 +156,15 @@ class Mongo_Collection implements Countable, Mongo_Connection_Interface				{
 		$this->_strCollection = is_null($this->_strCollection)?$strCollectionName:$this->_strCollection;
 		return true;
 	}
-	
+	public  function setDatabaseName($strDatabaseName)								{
+		/**
+		 *	@purpose:	Sets the Database Name
+		 */
+		if(!is_null($this->_strDatabase))
+			if($this->_strDatabase != $strDatabaseName)
+				throw new Mongo_Exception(Mongo_Exception::ERROR_COLLECTION_WRONG_DATABASE);
+		$this->_strDatabase	= $strDatabaseName;
+	}
 	public 	function decodeReference($arrReference)									{
 		/**
 		 *	@purpose:	decodes a DBReference
@@ -240,7 +248,7 @@ class Mongo_Collection implements Countable, Mongo_Connection_Interface				{
 		$options['multiple']= false;
 		
 		$arrId[Mongo_Document_Abstract::FIELD_ID]
-							= $mongoDocument->getByName(Mongo_Document_Abstract::FIELD_ID);
+							= new MongoId($mongoDocument->getByName(Mongo_Document_Abstract::FIELD_ID));
 		$this->raw_mongoCollection()->update($arrId, $arrAction, $options);
 		
 		return $this->findOne($arrId)->export();
