@@ -72,18 +72,19 @@ class Mongo_Collection implements Countable, Mongo_Connection_Interface				{
 		$return 	= $this->raw_mongoCollection()->drop();
 		return $return;
 	}
-	public  function find($query = array(), $fields = array())						{
+	public  function find($query = array(), $fields = array(), $sort = array())		{
 		/**
 		 *	@purpose:	
 		 * 	@param:		$query 	Array array(field => Value)
 		 *	@param:		$fields	Array array(A,B,C) - the fields to return
-		 *	@return:	returns Mongo_Document_Iterator
+		 *	@param:		$sort	Array array(A => 1, B => -1 ) where A,B are the fields to sort on & 1 = ASC, -1 = DESC
+		 *	@return:	returns Mongo_Document_Cursor
 		 */
 		if(is_null($query) || is_null($fields))
 			throw new Mongo_Exception(Mongo_Exception::ERROR_MISSING_VALUES);
 		$cursor				= $this->raw_mongoCollection()->find($query, $fields);
-		$iterDocument		= new Mongo_Document_Iterator($cursor, $this->_Mongo_Connection);
-		return $iterDocument;
+		$iterDocument		= new Mongo_Document_Cursor($cursor, $this->_Mongo_Connection);
+		return $iterDocument->sort($sort);
 	}
 	public  function findOne($query = array(), $fields = array())					{
 		/**
@@ -248,10 +249,9 @@ class Mongo_Collection implements Countable, Mongo_Connection_Interface				{
 		$options['multiple']= false;
 		
 		$arrId[Mongo_Document_Abstract::FIELD_ID]
-							= new MongoId($mongoDocument->getByName(Mongo_Document_Abstract::FIELD_ID));
+							= $mongoDocument->getByName(Mongo_Document_Abstract::FIELD_MONGO_ID);
 		$this->raw_mongoCollection()->update($arrId, $arrAction, $options);
-		
-		return $this->findOne($arrId)->export();
+		return true;
 								}
 	
 	private function raw_mongoCollection()											{
@@ -264,10 +264,15 @@ class Mongo_Collection implements Countable, Mongo_Connection_Interface				{
 		
 		if(is_null($this->_Mongo_Connection))										{
 			//Ok - we don't have a connection so see if we can load the default one!
-			if(is_null($this->_strDatabase))
-				throw new Mongo_Exception(Mongo_Exception::ERROR_MISSING_DATABASE);
+			if(is_null($this->_strDatabase))										{
+				//Try to load the default
+				$this->_strDatabase	= Mongo_Connection::getDefaultDatabase();
+				if(is_null($this->_strDatabase))
+					throw new Mongo_Exception(Mongo_Exception::ERROR_MISSING_DATABASE);
+			}
 			if(is_null(Mongo_Connection::getDefaultConnectionString()))
 				throw new Mongo_Exception(Mongo_Exception::ERROR_CONNECTION_NULL);
+			
 			$this->_Mongo_Connection 		= new Mongo_Connection();
 			$this->_Mongo_Connection->setDatabase($this->_strDatabase);
 		}

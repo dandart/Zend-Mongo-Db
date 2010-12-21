@@ -63,22 +63,13 @@ class Mongo_ConnectionTest extends PHPUnit_Framework_TestCase	{
 	public function testSUCCEED_toString()						{
 		$config			 	= new Zend_Config_Ini(MONGO_TEST_PATH.'mongo.ini', APPLICATION_ENV);
 		$mongoConn			= new Mongo_Connection($config->mongo);
-		$this->assertEquals(null, $mongoConn->__toString());
-		
-		$mongoConn->setDatabase(self::TEST_DATABASE);
+		//This time the default database has been loaded from the Mongo.ini
 		$this->assertEquals(self::TEST_DATABASE, $mongoConn->__toString());
+		
+		$mongoConn->setDatabase("newDatabase");
+		$this->assertEquals("newDatabase", $mongoConn->__toString());
 	}
 	//test connect 
-	public function testFAIL_connect_null()						{
-		$config			 	= new Zend_Config_Ini(MONGO_TEST_PATH.'mongo.ini', APPLICATION_ENV);
-		$mongoConn			= new Mongo_Connection($config->mongo);
-		try 													{
-			$mongoConn->connect();
-			$this->fail("Exception expected");
-		} catch(Mongo_Exception $e)								{
-			$this->assertEquals(Mongo_Exception::ERROR_MISSING_DATABASE, $e->getMessage());
-		}
-	}
 	public function testSUCCEED_connect()						{
 		$config			 	= new Zend_Config_Ini(MONGO_TEST_PATH.'mongo.ini', APPLICATION_ENV);
 		$mongoConn			= new Mongo_Connection($config->mongo);

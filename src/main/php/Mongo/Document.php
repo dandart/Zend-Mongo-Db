@@ -32,7 +32,11 @@ class Mongo_Document extends Mongo_Document_Abstract 								{
 		 *	@param:		$bUnique	= true 	(perform a $addToSet)
 		 *							= false	(perform a $push)
 		 */
-		$arrDocument	= $this->mongoCollection()->addToArray($this, $strElementName, $strItemToAdd, $bUnique);
+		$this->mongoCollection()->addToArray($this, $strElementName, $strItemToAdd, $bUnique);
+		$arrId[Mongo_Document_Abstract::FIELD_ID]
+							= $this->getByName(Mongo_Document_Abstract::FIELD_MONGO_ID);
+		$mongoDocument		= $this->mongoCollection()->findOne($arrId);
+		$arrDocument		= $mongoDocument->export();
 		$this->setArrDocument($arrDocument);
 		return true;
 	}

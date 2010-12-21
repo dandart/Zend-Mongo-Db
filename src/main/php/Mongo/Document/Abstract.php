@@ -14,6 +14,7 @@ abstract class Mongo_Document_Abstract implements ArrayAccess, Mongo_Connection_
 	const		FIELD_COLLECTION		= "_ref:Collection";
 	const		FIELD_DATABASE			= "_ref:Database";
 	const		FIELD_ID				= "_id";		//Holds the MongoId
+	const		FIELD_MONGO_ID			= "_MongoId";
 	const		FIELD_REFERENCE			= "_ref:Name";
 	const		FIELD_TYPE				= "_Type";		//Holds the "class" for this document
 	
@@ -59,8 +60,12 @@ abstract class Mongo_Document_Abstract implements ArrayAccess, Mongo_Connection_
 			return $this->_Mongo_Connection;
 		
 		//Ok - we don't have a connection so see if we can load the default one!
-		if(is_null($this->_strDatabase))
-			throw new Mongo_Exception(Mongo_Exception::ERROR_MISSING_DATABASE);
+		if(is_null($this->_strDatabase))										{
+			//Try to load the default
+			$this->_strDatabase	= Mongo_Connection::getDefaultDatabase();
+			if(is_null($this->_strDatabase))
+				throw new Mongo_Exception(Mongo_Exception::ERROR_MISSING_DATABASE);
+		}
 		if(is_null(Mongo_Connection::getDefaultConnectionString()))
 			throw new Mongo_Exception(Mongo_Exception::ERROR_CONNECTION_NULL);
 		$this->_Mongo_Connection 		= new Mongo_Connection();
@@ -124,8 +129,13 @@ abstract class Mongo_Document_Abstract implements ArrayAccess, Mongo_Connection_
 		 */
 		$data	= (isset($this->_arrDocument[$key]))?$this->_arrDocument[$key]:null;
 		if(!is_array($data))														{
-			if(self::FIELD_ID == $key)
+			if(self::FIELD_ID 		== $key)
 				return (string)$data;
+			if(self::FIELD_MONGO_ID == $key)										{
+				if(is_null($this->_arrDocument[self::FIELD_ID]))
+					return null;
+				return new MongoId($this->_arrDocument[self::FIELD_ID]);
+			}
 			
 			$arrRequirements 	= (isset($this->_arrRequirements[$key]))?$this->_arrRequirements[$key]:null;
 			$classDocument		= self::getDocumentClass(null, null, $arrRequirements);
@@ -510,6 +520,8 @@ abstract class Mongo_Document_Abstract implements ArrayAccess, Mongo_Connection_
 		 */
 		if(is_null($this->_arrDocument))
 			return false;
+		if(self::FIELD_MONGO_ID == $name)
+			$name	= self::FIELD_ID;
 		return isset($this->_arrDocument[$name]);
 	}
 	public 		function isOffsetSpecial($offset)									{

@@ -17,6 +17,9 @@ class Mongo_Connection 																{
 	const	DEFAULT_URL								= 'mongodb://';
 	const	DEFAULT_PORT							= Mongo::DEFAULT_PORT;
 	
+	const	STR_CONNECTION							= 'connection';
+	const 	STR_DATABASE							= "database";
+	
 	const	TYPE_DEFAULT_COLLECTION					= "Mongo_Collection";
 	const	TYPE_MONGO_DOCUMENT						= "Mongo_Document";
 	const	TYPE_MONGO_DOCUMENT_SET					= "Mongo_DocumentSet";
@@ -27,6 +30,7 @@ class Mongo_Connection 																{
 	private $p_strDatabaseName						= null;
 	
 	private static $_defaultConnectionString		= null;
+	private static $_defaultDatabaseName			= null;
 	
 	private function raw_mongo()													{
 		/**
@@ -47,9 +51,12 @@ class Mongo_Connection 																{
 		if($this->b_IsConnected)
 			return $this->_raw_mongoDB;
 			
-		if(is_null($this->p_strDatabaseName))
-			throw new Mongo_Exception(Mongo_Exception::ERROR_MISSING_DATABASE);
-			
+		if(is_null($this->p_strDatabaseName))										{
+			$this->p_strDatabaseName				= self::getDefaultDatabase();
+			if(is_null($this->p_strDatabaseName))
+				throw new Mongo_Exception(Mongo_Exception::ERROR_MISSING_DATABASE);
+		}
+
 		//Otherwise the hard work - lets make a connection to the right database
 		$this->_raw_mongoDB				= $this->raw_mongo()->selectDB($this->p_strDatabaseName);
 		$this->b_IsConnected 			= true;
@@ -63,10 +70,14 @@ class Mongo_Connection 																{
 		 *
 		 *	@todo:		Improve the $options so that this can take a Zend object too 	
 		 */
-		$connectionString	 	= $this->createConnectionString($connection);
+		$arrConnection		 	= $this->createConnectionArray($connection);
+	
+		$connectionString		= $arrConnection[self::STR_CONNECTION];
+		$databaseName			= $arrConnection[self::STR_DATABASE];
 		if(!Mongo_Connection::$_defaultConnectionString)
 			Mongo_Connection::$_defaultConnectionString	= $connectionString;
-		
+		$this->setDatabase($databaseName);
+	
 		//NOTE: This overrides to make sure that it only connects when required
 		$this->b_IsConnected	= false;
 		$options['connect'] 	= false;
@@ -215,39 +226,55 @@ class Mongo_Connection 																{
 		 *	@purpose:	Sets (or changes) the current database
 		 *	@param:		strDatabaseName
 		 */
-		if($strDatabaseName	== $this->p_strDatabaseName)
+		if($strDatabaseName								== $this->p_strDatabaseName)
 			return true;
 		
-		$this->b_IsConnected	= false;
-		return $this->p_strDatabaseName	= $strDatabaseName;
+		if(!Mongo_Connection::$_defaultDatabaseName)
+			Mongo_Connection::$_defaultDatabaseName		= $strDatabaseName;
+		$this->b_IsConnected							= false;
+		return $this->p_strDatabaseName					= $strDatabaseName;
 	}
 	
-	private static function createConnectionString($connection = null)				{
+	private static function createConnectionArray($connection = null)				{
 		/**
 		 *	@purpose:	Creates the Mongo Connection string
-		 *	@param:		$connection	- can be:	1. 	null					=> use the default parameters
-		 *										2.	a string				=> we assume that this is correct and use it
-		 *										3.	an array 				=> 
-		 *								associative array like:		hosts 	=> array("name" => array( host => , port => ))
-		 *															auth  	=> array(username =>, password => )
-		 *																			(if host = null then DEFAULT is taken)
-		 *																			(if port = null then DEFAULT is taken)
+		 *	@param:		$connection	- can be:	1. 	null						=> use the default parameters
+		 *										2.	a string					=> we assume that this is correct and use it
+		 *																			NOTE: the php engine doesn't like hots:port/dbname
+		 *																			NOTE: therefore at moment you have to pass this 
+		 *																			NOTE: separately if you want to use the string
+		 *										3.	an array 					=> 
+		 *								associative array like:		hosts 		=> array("name" => array( host => , port => ))
+		 *															auth  		=> array(username =>, password => )
+		 *																				(if host = null then DEFAULT is taken)
+		 *																				(if port = null then DEFAULT is taken)
+		 *															defaultDB 	=> string
 		 *										4. 	a Zend_Config object
 		 *															mongo.hosts.HOST_NAME.host	= 127.0.0.1
 		 *															mongo.hosts.HOST_NAME.port	= 27017
 		 *															mongo.auth.username			= "Tim"
-		 *															mongo.auth.password			= "abc123";									
+		 *															mongo.auth.password			= "abc123";	
+		 *															mongo.defaultDB				= ""								
+		 *	@return:	array[0] = the connection string
+		 *				array[1] = the databasename
 		 */
 		if(is_null($connection))													{
 			//If $connection is null then try to load the default one first
-			$connection		= Mongo_Connection::$_defaultConnectionString;
-			if(is_null($connection))
-				$connection	= self::DEFAULT_URL.
-								trim(sprintf(self::CONN_HOST_STRING, self::DEFAULT_HOST, self::DEFAULT_PORT),",");
-			return $connection;
+			$strConnectionString		= Mongo_Connection::$_defaultConnectionString;
+			if(is_null($strConnectionString))
+				$strConnectionString	= self::DEFAULT_URL.
+											trim(sprintf(self::CONN_HOST_STRING, self::DEFAULT_HOST, self::DEFAULT_PORT),",");
+			$databaseName				= Mongo_Connection::$_defaultDatabaseName;
+			return array(self::STR_CONNECTION 	=> $strConnectionString
+						,self::STR_DATABASE 	=> $databaseName);
 		}
-		if(is_string($connection))
-			return $connection;
+		if(is_string($connection))													{
+//@TODO HERE - have to parse the Connection
+			$strConnectionString	= $connection;
+			$databaseName 			= "";
+			return array(self::STR_CONNECTION 	=> $strConnectionString
+						,self::STR_DATABASE 	=> $databaseName);
+		}
 			
 		if (is_a($connection, "Zend_Config"))
             $connection 				= $connection->toArray();
@@ -267,13 +294,26 @@ class Mongo_Connection 																{
 		if(isset($connection["auth"]) && is_array($connection["auth"]))
 			$strConnectionString		= sprintf(self::CONN_AUTH, $connection["auth"]["username"], $connection["auth"]["password"])
 											.$strConnectionString;
+		$strConnectionString			= self::DEFAULT_URL.$strConnectionString;
 		
-		return self::DEFAULT_URL.$strConnectionString;
+		$databaseName					= isset($connection["defaultDB"])?
+												$connection["defaultDB"]:Mongo_Connection::$_defaultDatabaseName;
+		
+		return array(self::STR_CONNECTION 	=> $strConnectionString
+					,self::STR_DATABASE 	=> $databaseName); 
 	}
 	public 	static function setDefaultConnectionString($connection)					{
-		Mongo_Connection::$_defaultConnectionString	= Mongo_Connection::createConnectionString($connection);
+		$arrConnection								= Mongo_Connection::createConnectionArray($connection);
+		Mongo_Connection::$_defaultConnectionString	= $arrConnection[self::STR_CONNECTION];
+		Mongo_Connection::$_defaultDatabaseName		= $arrConnection[self::STR_DATABASE];
 	}
 	public 	static function getDefaultConnectionString()							{
 		return Mongo_Connection::$_defaultConnectionString;
+	}
+	public 	static function getDefaultDatabase()									{
+		return Mongo_Connection::$_defaultDatabaseName;
+	}
+	public 	static function setDefaultDatabase($strDatabaseName)					{
+		return Mongo_Connection::$_defaultDatabaseName = $strDatabaseName;
 	}
 }

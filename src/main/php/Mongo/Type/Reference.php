@@ -25,7 +25,6 @@ class Mongo_Type_Reference 													{
 			throw new Mongo_Exception(Mongo_Exception::ERROR_MISSING_VALUES);
 		
 		$mongoId		= new MongoId($mongoDocument[Mongo_Document_Abstract::FIELD_ID]);
-		
 		$arrReference	= MongoDBRef::create(	$mongoDocument->getCollectionName()
 											, 	$mongoId
 											,	$mongoDocument->getDatabaseName());
