@@ -11,18 +11,15 @@ class Mongo_DocumentSetTest extends PHPUnit_Framework_TestCase	{
 	const	TEST_DATABASE	= "testMongo";
 	const	TEST_COLLECTION	= "testDocumentSetTest";
 	
-	private $_colMongo		= null;
 	private $_connMongo		= null;
 	
 	public function setUp()										{
 		//Before we do anything we should drop any pre-existing test databases
 		$config			 	= new Zend_Config_Ini(MONGO_TEST_PATH.'mongo.ini', APPLICATION_ENV);
 		$this->_connMongo	= new Mongo_Connection($config->mongo);
-		$this->_connMongo->setDatabase(self::TEST_DATABASE);
-		$arrCollections		= $this->_connMongo->getCollections();
+		$arrCollections		= $this->_connMongo->getCollections(self::TEST_DATABASE);
 		foreach($arrCollections AS $mongoCollection)
 			$mongoCollection->drop();
-		$this->_colMongo	= $this->_connMongo->getCollection(self::TEST_COLLECTION);
 	}
 	public function testSUCCEED_createEmptyDocumentSet()		{
 		/**

@@ -69,7 +69,6 @@ abstract class Mongo_Document_Abstract implements ArrayAccess, Mongo_Connection_
 		if(is_null(Mongo_Connection::getDefaultConnectionString()))
 			throw new Mongo_Exception(Mongo_Exception::ERROR_CONNECTION_NULL);
 		$this->_Mongo_Connection 		= new Mongo_Connection();
-		$this->_Mongo_Connection->setDatabase($this->_strDatabase);
 		return $this->_Mongo_Connection;
 	}	
 	protected	function mongoCollection()											{
@@ -84,11 +83,13 @@ abstract class Mongo_Document_Abstract implements ArrayAccess, Mongo_Connection_
 		if(is_null($this->_strCollection))
 			throw new Mongo_Exception(Mongo_Exception::ERROR_COLLECTION_NULL);
 		
-		$mongoConnection	= $this->mongoConnection();
-		$this->_Mongo_Collection	= $mongoConnection->getCollection($this->_strCollection, $this->_classCollectionType);
+		$mongoConnection			= $this->mongoConnection();
+		$this->_Mongo_Collection	= $mongoConnection->getCollection(	$this->_strDatabase
+																	 , 	$this->_strCollection
+			 														 ,	$this->_classCollectionType);
 		return $this->_Mongo_Collection;
 	}
-	public 		function __construct($arrDocument = null)							{
+	public 		final function __construct($arrDocument = null)						{
 		$this->setArrDocument($arrDocument);
 		//Clean up the requirements
 		$this->_arrRequirements			= $this->makeRequirementsTidy($this->_arrRequirements);
@@ -221,9 +222,8 @@ abstract class Mongo_Document_Abstract implements ArrayAccess, Mongo_Connection_
 		if(!$strDatabase)
 			throw new Mongo_Exception(Mongo_Exception::ERROR_MISSING_DATABASE);
 
-		if($this->_strDatabase)
-			if($strDatabase != $this->_strDatabase)
-				throw new Mongo_Exception(Mongo_Exception::ERROR_DOCUMENT_WRONG_DATABASE);
+		if($this->_strDatabase && $strDatabase != $this->_strDatabase)
+			throw new Mongo_Exception(sprintf(Mongo_Exception::ERROR_DOCUMENT_WRONG_DATABASE,$strDatabase,$this->_strDatabase));
 
 		$this->_strDatabase = $strDatabase; 
 		return true;
@@ -553,13 +553,7 @@ abstract class Mongo_Document_Abstract implements ArrayAccess, Mongo_Connection_
 		/**
 		 *	@purpose:	Sets the Connection for this document / document set
 		 */
-		if(is_null($mongoConnection))
-			return $this->_Mongo_Connection	= null;
-		
-		if(!is_null($this->_strDatabase) && $this->_strDatabase != $mongoConnection->getDatabase())
-			throw new Mongo_Exception(Mongo_Exception::ERROR_COLLECTION_WRONG_DATABASE);
 		$this->_Mongo_Connection	= $mongoConnection;
-		$this->setDatabaseName($mongoConnection->getDatabase());
 	}
 	//Implements ArrayAccess
 	public    	function offsetExists($offset)										{

@@ -71,7 +71,8 @@ class Mongo_Document extends Mongo_Document_Abstract 								{
 		$bNewDocument	= $this->isNew();
 		($bNewDocument)?$this->_PreInsert():$this->_PreUpdate();
 		$this->_PreSave();
-		$this->setArrDocument($this->mongoCollection()->save($this)->export());
+		$arrDocument	= $this->mongoCollection()->save($this)->export();
+		$this->setArrDocument($arrDocument);
 		$this->_PostSave();
 		($bNewDocument)?$this->_PostInsert():$this->_PostUpdate();
 		return $this;

@@ -10,15 +10,17 @@
 class Mongo_Document_Cursor implements OuterIterator, Countable						{
 	private	$_cursor 				= null;	//This is the MongoCursor
 	private $_Mongo_Connection		= null; //This is the Mongo_Connection
+	private $_strDatabaseName		= null;
 	
-	public function __construct(MongoCursor $cursor, Mongo_Connection $mongoConn)	{
+	public function __construct(MongoCursor $cursor, Mongo_Connection $mongoConn, $strDatabaseName)	{
 		/**
 		 *	@purpose:	A cursor is a wrapper for the MongoCursor therefore it needs a "non-null" MongoCursor to create
 		 */
-		if(is_null($cursor))
+		if(is_null($cursor) || is_null($strDatabaseName))
 			throw new Mongo_Exception(Mongo_Exception::ERROR_NOT_NULL);
 		$this->_cursor 				= $cursor;
 		$this->_Mongo_Connection	= $mongoConn;
+		$this->_strDatabaseName		= $strDatabaseName;
 	}
 	
 	public function limit($intLimit = 0)											{
@@ -74,6 +76,7 @@ class Mongo_Document_Cursor implements OuterIterator, Countable						{
 		$docDocument	= new $classDocument($arrDocument);
 		if($this->_Mongo_Connection)
 			$docDocument->setConnection($this->_Mongo_Connection);
+		$docDocument->setDatabaseName($this->_strDatabaseName);
 		return $docDocument;
 	}	
 	public function getNext()														{

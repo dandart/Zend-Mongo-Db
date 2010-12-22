@@ -59,16 +59,6 @@ class Mongo_ConnectionTest extends PHPUnit_Framework_TestCase	{
 			$this->assertEquals(Mongo_Exception::ERROR_NOT_IMPLEMENTED, $e->getMessage());
 		}
 	}
-	//test __toString
-	public function testSUCCEED_toString()						{
-		$config			 	= new Zend_Config_Ini(MONGO_TEST_PATH.'mongo.ini', APPLICATION_ENV);
-		$mongoConn			= new Mongo_Connection($config->mongo);
-		//This time the default database has been loaded from the Mongo.ini
-		$this->assertEquals(self::TEST_DATABASE, $mongoConn->__toString());
-		
-		$mongoConn->setDatabase("newDatabase");
-		$this->assertEquals("newDatabase", $mongoConn->__toString());
-	}
 	//test connect 
 	public function testSUCCEED_connect()						{
 		$config			 	= new Zend_Config_Ini(MONGO_TEST_PATH.'mongo.ini', APPLICATION_ENV);
@@ -87,9 +77,8 @@ class Mongo_ConnectionTest extends PHPUnit_Framework_TestCase	{
 	public function testFAIL_executeFile_NotFound()				{
 		$config			 	= new Zend_Config_Ini(MONGO_TEST_PATH.'mongo.ini', APPLICATION_ENV);
 		$mongoConn			= new Mongo_Connection($config->mongo);
-		$mongoConn->setDatabase(self::TEST_DATABASE);
 		try 													{
-			$mongoConn->executeFile("FAIL");
+			$mongoConn->executeFile("FAIL", self::TEST_DATABASE);
 			$this->fail("Exception expected");
 		} catch (Exception $e) {
 			$this->assertEquals("fopen(FAIL): failed to open stream: No such file or directory", $e->getMessage());
@@ -98,12 +87,11 @@ class Mongo_ConnectionTest extends PHPUnit_Framework_TestCase	{
 	public function testSUCCEED_executeFile()					{
 		$config			 	= new Zend_Config_Ini(MONGO_TEST_PATH.'mongo.ini', APPLICATION_ENV);
 		$mongoConn			= new Mongo_Connection($config->mongo);
-		$mongoConn->setDatabase(self::TEST_DATABASE);
-		$return 			= $mongoConn->executeFile(MOCK_DB_PATH."/Mongo/DbTest.js");
+		$return 			= $mongoConn->executeFile(MOCK_DB_PATH."/Mongo/DbTest.js", self::TEST_DATABASE);
 		$this->assertEquals(1, $return["ok"]);
 			
 		//Here we check that it actually worked
-		$dbColn				= $mongoConn->getCollection("Accounts");
+		$dbColn				= $mongoConn->getCollection(self::TEST_DATABASE, "Accounts");
 		$dbAccount			= $dbColn->findOne();
 		$this->assertEquals("lcfcomputers", $dbAccount->AccountURL);
 	}
@@ -114,8 +102,7 @@ class Mongo_ConnectionTest extends PHPUnit_Framework_TestCase	{
 	public function testSUCCEED_getCollections_empty()			{
 		$config			 	= new Zend_Config_Ini(MONGO_TEST_PATH.'mongo.ini', APPLICATION_ENV);
 		$mongoConn			= new Mongo_Connection($config->mongo);
-		$mongoConn->setDatabase(self::TEST_DATABASE);
-		$arrCollections		= $mongoConn->getCollections();
+		$arrCollections		= $mongoConn->getCollections(self::TEST_DATABASE);
 		$intNoCollections	= count($arrCollections);
 		//This is all very brittle - we have ONE collection because we created it during the SUCCEED_executeFile
 		$this->assertEquals(1, $intNoCollections);
@@ -123,14 +110,13 @@ class Mongo_ConnectionTest extends PHPUnit_Framework_TestCase	{
 	public function testSUCCEED_getCollections()				{
 		$config			 	= new Zend_Config_Ini(MONGO_TEST_PATH.'mongo.ini', APPLICATION_ENV);
 		$mongoConn			= new Mongo_Connection($config->mongo);
-		$mongoConn->setDatabase(self::TEST_DATABASE);
-		$arrCollections		= $mongoConn->getCollections();
+		$arrCollections		= $mongoConn->getCollections(self::TEST_DATABASE);
 		$intNoCollections	= count($arrCollections);
 		$this->assertEquals(1, $intNoCollections);
 		
 		//Now create a couple of collections
-		$colCollection1		= $mongoConn->getCollection("collection1");		
-		$arrCollections		= $mongoConn->getCollections();
+		$colCollection1		= $mongoConn->getCollection(self::TEST_DATABASE, "collection1");		
+		$arrCollections		= $mongoConn->getCollections(self::TEST_DATABASE);
 		$intNoCollections	= count($arrCollections);
 		//NOTE: This is still ZERO because collections are Lazy saved
 		$this->assertEquals(1, $intNoCollections);

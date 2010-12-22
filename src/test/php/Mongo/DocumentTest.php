@@ -26,7 +26,6 @@ class Mongo_DocumentTest extends PHPUnit_Framework_TestCase		{
 		//Before we do anything we should drop any pre-existing test databases
 		$config			 	= new Zend_Config_Ini(MONGO_TEST_PATH.'mongo.ini', APPLICATION_ENV);
 		$this->_connMongo	= new Mongo_Connection($config->mongo);
-		$this->_connMongo->setDatabase(self::TEST_DATABASE);
 		$this->_connMongo->executeFile(MOCK_DB_PATH."/Mongo/DocumentTest.js");
 	}
 	//construct
@@ -47,6 +46,10 @@ class Mongo_DocumentTest extends PHPUnit_Framework_TestCase		{
 	public function testSUCCEED_construct_setConnection()		{
 		$mongoDocument		= new Mongo_Document();
 		$mongoDocument->setConnection($this->_connMongo);
+		//Until we've set the Database name it should be null
+		$this->assertEquals(null,					$mongoDocument->getDatabaseName());
+		
+		$mongoDocument->setDatabaseName(self::TEST_DATABASE);
 		$this->assertEquals(self::TEST_DATABASE,	$mongoDocument->getDatabaseName());
 	}
 	//addItemToArray
@@ -113,7 +116,7 @@ class Mongo_DocumentTest extends PHPUnit_Framework_TestCase		{
 		$this->markTestSkipped();
 	}
 	public function testSUCEED_get_DBSet_DBRef()				{
-		$colAccountUser		= $this->_connMongo->getCollection("Account_Users");
+		$colAccountUser		= $this->_connMongo->getCollection(self::TEST_DATABASE, "Account_Users");
 		$docAccountUser		= $colAccountUser->findOne();
 		$this->assertEquals("Tim", $docAccountUser->FirstName);
 		
