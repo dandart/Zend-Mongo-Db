@@ -11,9 +11,22 @@ class testCollection extends Mongo_Collection					{
 	const		COLLECTION_TEST			= 'Test';	
 	protected 	$_strDatabase 			= Mongo_CollectionTest::TEST_DATABASE;
 	protected 	$_strCollection			= testCollection::COLLECTION_TEST;
+	protected	$_strClassDocumentType	= "testDocument";
 }
-class testCollection_Document extends Mongo_Document			{
-	
+class testDocument extends Mongo_Document						{
+	protected 	$_strDatabase 			= Mongo_CollectionTest::TEST_DATABASE;
+	protected 	$_strCollection			= testCollection::COLLECTION_TEST;
+	protected	$_classCollectionType	= "testCollection";
+}
+
+class testCollection_NoDB extends Mongo_Collection					{
+	const		COLLECTION_TEST			= 'Test_NoDb';	
+	protected 	$_strCollection			= testCollection::COLLECTION_TEST;
+	protected	$_strClassDocumentType	= "testDocument_NoDB";
+}
+class testDocument_NoDB extends Mongo_Document						{
+	protected 	$_strCollection			= testCollection_NoDB::COLLECTION_TEST;
+	protected	$_classCollectionType	= "testCollection_NoDB";
 }
 
 class Mongo_CollectionTest extends PHPUnit_Framework_TestCase	{	
@@ -37,7 +50,8 @@ class Mongo_CollectionTest extends PHPUnit_Framework_TestCase	{
 			$colTest		= new testCollection("FAILURE_ITS_A_STRING");
 			$this->fail("Exception expected");
 		} catch (Mongo_Exception $e)							{
-			$this->assertEquals(Mongo_Exception::ERROR_COLLECTION_WRONG_COLLECTION, $e->getMessage());
+			$this->assertEquals(sprintf(Mongo_Exception::ERROR_COLLECTION_WRONG_COLLECTION,'Test','FAILURE_ITS_A_STRING')
+											, $e->getMessage());
 		}
 	}
 	public function testSUCCEED_construct_noConn()				{
@@ -49,7 +63,8 @@ class Mongo_CollectionTest extends PHPUnit_Framework_TestCase	{
 			$coln				= new Mongo_Collection("testCollection", $this->_connMongo->getrawCollection("wrongCollection"));
 			$this->fail("Exception expected");
 		} catch (Mongo_Exception $e)							{
-			$this->assertEquals(Mongo_Exception::ERROR_COLLECTION_WRONG_COLLECTION, $e->getMessage());
+			$this->assertEquals(sprintf(Mongo_Exception::ERROR_COLLECTION_WRONG_COLLECTION,'testCollection','wrongCollection')
+											, $e->getMessage());
 		}
 	}
 	public function testSUCCEED_construct_Conn()				{
@@ -75,19 +90,37 @@ class Mongo_CollectionTest extends PHPUnit_Framework_TestCase	{
 	
 	//createDocument
 	public function testSUCCEED_create_MongoDocument()			{
-		$colTest			= new testCollection();
-		$this->assertEquals("testCollection", 					get_class($colTest));
+		$colTest			= new Mongo_Collection("a_collection");
+		$this->assertEquals("Mongo_Collection", 				get_class($colTest));
 		$mongoDocument		= $colTest->createDocument();
 		$this->assertEquals("Mongo_Document",					get_class($mongoDocument));
 	}
 	public function testSUCCEED_create_ChildDocument()			{
 		$colTest			= new testCollection();
 		$this->assertEquals("testCollection", 					get_class($colTest));
-		$colTest->setDefaultDocumentType("testCollection_Document");
 		$mongoDocument		= $colTest->createDocument();
-		$this->assertEquals("testCollection_Document",			get_class($mongoDocument));
+		$this->assertEquals("testDocument",						get_class($mongoDocument));
 	}
-
+	public function testSUCCEED_create_ChildDocument_set()		{
+		$colTest			= new testCollection();
+		$this->assertEquals("testCollection", 					get_class($colTest));
+		$colTest->setDefaultDocumentType("testDocument");
+		$mongoDocument		= $colTest->createDocument();
+		$this->assertEquals("testDocument",						get_class($mongoDocument));
+	}
+	public function testFAIL_create_ChildDocument_set()			{
+		$strNewColn			= "testDocument_NoDB";
+		$colTest			= new testCollection();
+		$this->assertEquals("testCollection", 					get_class($colTest));
+		$colTest->setDefaultDocumentType($strNewColn);
+		try 													{
+			$mongoDocument		= $colTest->createDocument();
+			$this->fail("Exception expected");
+		} catch (Exception $e) {
+			$this->assertEquals(sprintf(Mongo_Exception::ERROR_DOCUMENT_WRONG_COLLECTION,'Test',testCollection_NoDB::COLLECTION_TEST)
+									, $e->getMessage());
+		}	
+	}
 	//decodeReference
 
 

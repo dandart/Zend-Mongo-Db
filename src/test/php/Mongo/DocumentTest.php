@@ -82,11 +82,13 @@ class Mongo_DocumentTest extends PHPUnit_Framework_TestCase		{
 	//setCollectionName
 	public function testFAIL_setCollection_Invalid()			{
 		$childDocument		= new DocumentTest_ChildDocumentRequirements();
+		$strNewColn			= "FAIL";
 		try 													{
-			$childDocument->setCollectionName("FAIL");
+			$childDocument->setCollectionName($strNewColn);
 			$this->fail("Exception expected");
 		} catch (Exception $e) {
-			$this->assertEquals(Mongo_Exception::ERROR_DOCUMENT_WRONG_COLLECTION, $e->getMessage());
+			$this->assertEquals(sprintf(Mongo_Exception::ERROR_DOCUMENT_WRONG_COLLECTION,
+									$strNewColn,Mongo_DocumentTest::TEST_COLLECTION), $e->getMessage());
 		}
 		
 	}

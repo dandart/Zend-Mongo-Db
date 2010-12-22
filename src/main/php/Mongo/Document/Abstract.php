@@ -234,7 +234,8 @@ abstract class Mongo_Document_Abstract implements ArrayAccess, Mongo_Connection_
 			
 		if($this->_strCollection)
 			if($strCollection != $this->_strCollection)
-				throw new Mongo_Exception(Mongo_Exception::ERROR_DOCUMENT_WRONG_COLLECTION);
+				throw new Mongo_Exception(sprintf(Mongo_Exception::ERROR_DOCUMENT_WRONG_COLLECTION
+											,$strCollection,$this->_strCollection));
 
 		$this->_strCollection = $strCollection;
 		return true;

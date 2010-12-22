@@ -137,10 +137,12 @@ class Mongo_Collection implements Countable, Mongo_Connection_Interface				{
 		
 		//Now check that the CollectionNames are the same
 		if(!is_null($this->_strCollection) 		&& $raw_MongoCollection->getName() != $this->_strCollection)
-			throw new Mongo_Exception(Mongo_Exception::ERROR_COLLECTION_WRONG_COLLECTION);
+			throw new Mongo_Exception(sprintf(Mongo_Exception::ERROR_COLLECTION_WRONG_COLLECTION,
+											$this->_strCollection,$raw_MongoCollection->getName()));
 		//Then check that the DatabaseNames are the same
 		if(!is_null($this->_strDatabase) 		&& $raw_MongoCollection->db->__toString() != $this->_strDatabase)
-			throw new Mongo_Exception(Mongo_Exception::ERROR_COLLECTION_WRONG_DATABASE);
+			throw new Mongo_Exception(sprintf(Mongo_Exception::ERROR_COLLECTION_WRONG_DATABASE,
+											$this->_strDatabase, $raw_MongoCollection->db->__toString()));
 		
 		$this->_rawMongoCollection				= $raw_MongoCollection;
 	}
@@ -152,7 +154,8 @@ class Mongo_Collection implements Countable, Mongo_Connection_Interface				{
 			return true;
 		
 		if(!is_null($this->_strCollection) && $this->_strCollection != $strCollectionName)
-			throw new Mongo_Exception(Mongo_Exception::ERROR_COLLECTION_WRONG_COLLECTION);
+			throw new Mongo_Exception(sprintf(Mongo_Exception::ERROR_COLLECTION_WRONG_COLLECTION,
+											$this->_strCollection,$strCollectionName));
 		
 		$this->_strCollection = is_null($this->_strCollection)?$strCollectionName:$this->_strCollection;
 		return true;
@@ -163,7 +166,8 @@ class Mongo_Collection implements Countable, Mongo_Connection_Interface				{
 		 */
 		if(!is_null($this->_strDatabase))
 			if($this->_strDatabase != $strDatabaseName)
-				throw new Mongo_Exception(Mongo_Exception::ERROR_COLLECTION_WRONG_DATABASE);
+				throw new Mongo_Exception(sprintf(Mongo_Exception::ERROR_COLLECTION_WRONG_DATABASE,
+												$this->_strDatabase, $strDatabaseName));
 		$this->_strDatabase	= $strDatabaseName;
 	}
 	public 	function decodeReference($arrReference)									{
@@ -184,12 +188,21 @@ class Mongo_Collection implements Countable, Mongo_Connection_Interface				{
 		 *					b) object = an instance of the class
 		 *					c) null   = reset to default
 		 */
+		
+		//it's null - return a default Mongo_Document
 		if(is_null($mixedClassDefaultDoc))
 			return $this->_strClassDocumentType = Mongo_Connection::TYPE_MONGO_DOCUMENT;
+		
+		//It's a Mongo_Document (or child of)
 		if(is_object($mixedClassDefaultDoc) && is_a($mixedClassDefaultDoc, Mongo_Connection::TYPE_MONGO_DOCUMENT))
 			return $this->_strClassDocumentType = get_class($mixedClassDefaultDoc);
-		if(is_string($mixedClassDefaultDoc) && class_exists($mixedClassDefaultDoc))
+		
+		//It's a string
+		if(is_string($mixedClassDefaultDoc) 
+			&& (is_subclass_of($mixedClassDefaultDoc, Mongo_Connection::TYPE_MONGO_DOCUMENT) 
+				|| Mongo_Connection::TYPE_MONGO_DOCUMENT == $mixedClassDefaultDoc))
 			return $this->_strClassDocumentType = $mixedClassDefaultDoc;
+			
 		throw new Mongo_Exception(Mongo_Exception::ERROR_MISSING_VALUES);
 	}
 	
@@ -221,7 +234,8 @@ class Mongo_Collection implements Countable, Mongo_Connection_Interface				{
 		if( !is_null($this->getCollectionName()) 
 		&& (!is_null($mongoDocument->getCollectionName()))
 		&& ($mongoDocument->getCollectionName() 	!= $this->getCollectionName()))
-			throw new Mongo_Exception(Mongo_Exception::ERROR_DOCUMENT_WRONG_COLLECTION);
+			throw new Mongo_Exception(sprintf(Mongo_Exception::ERROR_DOCUMENT_WRONG_COLLECTION
+												,$mongoDocument->getCollectionName(),$this->getCollectionName()));
 		//Now check that the Required parameters are all valid
 				
 		$options["safe"]	= $bSafe;
@@ -301,11 +315,13 @@ class Mongo_Collection implements Countable, Mongo_Connection_Interface				{
 		
 		//Firstly check that this is for the right database
 		if(!is_null($this->_strDatabase) 		&& $mongoConnection->getDatabase() != $this->_strDatabase)
-			throw new Mongo_Exception(Mongo_Exception::ERROR_COLLECTION_WRONG_DATABASE);
+			throw new Mongo_Exception(sprintf(Mongo_Exception::ERROR_COLLECTION_WRONG_DATABASE,
+											$this->_strDatabase, $mongoConnection->getDatabase()));
 		//Secondly check that this is for the right raw_Collection
 		if(!is_null($this->_rawMongoCollection)	
 		&& $this->_rawMongoCollection->db->__toString() != $mongoConnection->getDatabase())
-			throw new Mongo_Exception(Mongo_Exception::ERROR_COLLECTION_WRONG_COLLECTION);
+			throw new Mongo_Exception(sprintf(Mongo_Exception::ERROR_COLLECTION_WRONG_COLLECTION,
+											$this->_strCollection,$raw_MongoCollection->getName()));
 		
 		$this->_Mongo_Connection	= $mongoConnection;
 		return true;
