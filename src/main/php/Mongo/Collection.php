@@ -5,7 +5,9 @@
  * @copyright  2010, Campaign and Digital Intelligence Ltd
  * @license    New BSD License
  * @author     Tim Langley
- */
+**/
+
+
 class Mongo_Collection implements Countable, Mongo_Connection_Interface				{
 	
 	private   	$_rawMongoCollection	= null;	//Holds the MongoCollection object 
@@ -16,23 +18,24 @@ class Mongo_Collection implements Countable, Mongo_Connection_Interface				{
 	
 	/****
 	 **	These are the parameters that can (optionally be overridden in the child classes)
-	 ****/
+	****/
 	protected 	$_strClassDocumentType 	= Mongo_Connection::TYPE_MONGO_DOCUMENT;
 	protected 	$_strDatabase 			= null;
 	protected 	$_strCollection			= null;
 	/****
 	 **	END
-	 ****/
+	****/
 	
+	/**
+	 *	@purpose: 	This tries to create a Mongo_Collection
+	 *	@param:		$mixedVariable - this is a very very versatile beast ;-)
+	 *					= null 			=> This is ONLY possible in child classes where $_strDatabase has been over ridden
+	 *									=> in this case we take the default connection and try to connect to $_strDatabase
+	 *					= a Collection
+	 *					= a Connection
+	*/
 	public  final function __construct($strDatabaseName = null, $strCollectionName = null)	{
-		/**
-		 *	@purpose: 	This tries to create a Mongo_Collection
-		 *	@param:		$mixedVariable - this is a very very versatile beast ;-)
-		 *					= null 			=> This is ONLY possible in child classes where $_strDatabase has been over ridden
-		 *									=> in this case we take the default connection and try to connect to $_strDatabase
-		 *					= a Collection
-		 *					= a Connection
-		 */
+		
 
 		//Some sanity checking - basically we check that the default class exists
 		$this->setCollectionName($strCollectionName);
@@ -41,19 +44,20 @@ class Mongo_Collection implements Countable, Mongo_Connection_Interface				{
 		$this->_strClassDocumentType	= $this->setDefaultDocumentType($this->_strClassDocumentType);
 		
 	}
+	/**
+	 *	@purpose: 	Returns the name of the collection
+	 *	@NOTE:		This does NOT mean that the collection is connected
+	*/
 	public  function __toString()													{
-		/**
-		 *	@purpose: 	Returns the name of the collection
-		 *	@NOTE:		This does NOT mean that the collection is connected
-		 */
+		
 		return $this->_strCollection;
 	}
-	
+	/**
+	 *	@purpose: 	This creates a default document for this collection
+	 *	@return:	Mongo_Document (or child)
+	**/
 	public  function createDocument($arrDocument = array())							{
-		/**
-		 *	@purpose: 	This creates a default document for this collection
-		 *	@return:	Mongo_Document (or child)
-		 */
+		
 		$classDocument				= $this->getDocumentType($arrDocument);
 		
 		$docAbstract				= new $classDocument($arrDocument);
@@ -65,35 +69,38 @@ class Mongo_Collection implements Countable, Mongo_Connection_Interface				{
 			$docAbstract->setCollectionName($this->_strCollection);
 		return $docAbstract;
 	}
+	/**
+	 *	@purpose:	Drops this connection
+	*/
 	public  function drop()															{
-		/**
-		 *	@purpose:	Drops this connection
-		 */
+		
 		$return 	= $this->raw_mongoCollection()->drop();
 		return $return;
 	}
+	/**
+	 *	@purpose:	
+	 * 	@param:		$query 	Array array(field => Value)
+	 *	@param:		$fields	Array array(A,B,C) - the fields to return
+	 *	@param:		$sort	Array array(A => 1, B => -1 ) where A,B are the fields to sort on & 1 = ASC, -1 = DESC
+	 *	@return:	returns Mongo_Document_Cursor
+	*/
 	public  function find($query = array(), $fields = array(), $sort = array())		{
-		/**
-		 *	@purpose:	
-		 * 	@param:		$query 	Array array(field => Value)
-		 *	@param:		$fields	Array array(A,B,C) - the fields to return
-		 *	@param:		$sort	Array array(A => 1, B => -1 ) where A,B are the fields to sort on & 1 = ASC, -1 = DESC
-		 *	@return:	returns Mongo_Document_Cursor
-		 */
+		
 		if(is_null($query) || is_null($fields))
 			throw new Mongo_Exception(Mongo_Exception::ERROR_MISSING_VALUES);
 		$cursor				= $this->raw_mongoCollection()->find($query, $fields);
 		$iterDocument		= new Mongo_Document_Cursor($cursor, $this->_Mongo_Connection, $this->getDatabaseName());
 		return $iterDocument->sort($sort);
 	}
+	/**
+	 *	@purpose:	
+	 * 	@param:		$query 	Array array(field => Value)
+	 *	@param:		$fields	Array array(A,B,C) - the fields to return
+	 *	@return:	returns an object of Mongo_Document (or child of this)
+	 *
+	*/
 	public  function findOne($query = array(), $fields = array())					{
-		/**
-		 *	@purpose:	
-		 * 	@param:		$query 	Array array(field => Value)
-		 *	@param:		$fields	Array array(A,B,C) - the fields to return
-		 *	@return:	returns an object of Mongo_Document (or child of this)
-		 *
-		 */
+		
 		if(is_null($query) || is_null($fields))
 			throw new Mongo_Exception(Mongo_Exception::ERROR_MISSING_VALUES);
 		$arrDocument	= $this->raw_mongoCollection()->findOne($query, $fields);
@@ -104,34 +111,38 @@ class Mongo_Collection implements Countable, Mongo_Connection_Interface				{
 	public 	function getCollectionClass()											{
 		return get_class($this);
 	}
+	/**
+	 *	@purpose:	Returns the name of the collection
+	 *	@return:	string - the collection name
+	*/
 	public  function getCollectionName()											{
-		/**
-		 *	@purpose:	Returns the name of the collection
-		 *	@return:	string - the collection name
-		 */
+		
 		return $this->raw_mongoCollection()->getName();
 	}
+	/**
+	 *	@purpose:	Works out what type of Document class should be created
+	 *				NOTE: 	This checks if an existing document is trying to be "recreated" and if so it the _Type is valid
+	 *				SECOND:	This checks if the collection has a default type
+	*/
 	private function getDocumentType($arrDocument = array())						{
-		/**
-		 *	@purpose:	Works out what type of Document class should be created
-		 *				NOTE: 	This checks if an existing document is trying to be "recreated" and if so it the _Type is valid
-		 *				SECOND:	This checks if the collection has a default type
-		 */
+		
 		return Mongo_Document_Abstract::getDocumentClass($this->getDefaultDocumentType(), $arrDocument);
 	}
+	/**
+	 *	@purpose:	Returns the database that this Collection is attached to
+	*/
 	public  function getDatabaseName()												{
-		/**
-		 *	@purpose:	Returns the database that this Collection is attached to
-		 */
+		
 		return $this->_strDatabase;
 	}
 	public 	function getDefaultDocumentType()										{
 		return (class_exists($this->_strClassDocumentType))?$this->_strClassDocumentType:Mongo_Connection::TYPE_MONGO_DOCUMENT;
 	}
+	/**
+	 *	@purpose:	This PRIVATE function does the sanity checking on setting the collection
+	*/
 	private function setCollection(MongoCollection $raw_MongoCollection = null)		{
-		/**
-		 *	@purpose:	This PRIVATE function does the sanity checking on setting the collection
-		 */
+		
 		if(is_null($raw_MongoCollection))
 			return true;
 		
@@ -160,10 +171,11 @@ class Mongo_Collection implements Countable, Mongo_Connection_Interface				{
 		$this->_strCollection = is_null($this->_strCollection)?$strCollectionName:$this->_strCollection;
 		return true;
 	}
+	/**
+	 *	@purpose:	Sets the Database Name
+	**/
 	public  function setDatabaseName($strDatabaseName = null)						{
-		/**
-		 *	@purpose:	Sets the Database Name
-		 */
+		
 		
 		if(!is_null($this->_strDatabase))			
 			if($this->_strDatabase == $strDatabaseName || is_null($strDatabaseName))
@@ -178,25 +190,25 @@ class Mongo_Collection implements Countable, Mongo_Connection_Interface				{
 		throw new Mongo_Exception(Mongo_Exception::ERROR_MISSING_DATABASE);
 		
 	}
+	/**
+	 *	@purpose:	decodes a DBReference
+	 *	@param:		$arrReference	= array like: array($ref, $id, $database)
+	*/
 	public 	function decodeReference($arrReference)									{
-		/**
-		 *	@purpose:	decodes a DBReference
-		 *	@param:		$arrReference	= array like: array($ref, $id, $database)
-		 */
+		
 		$arrDocument	= $this->raw_mongoCollection()->getDBRef($arrReference);
 		if(!$arrDocument)
 			return null;
 		return $this->createDocument($arrDocument, true);
 	}
-	public 	function setDefaultDocumentType($mixedClassDefaultDoc = null)			{
-		/**
-		 *	@purpose: 	This sets the defaultDocumentType for this collection
-		 *	@param:		$classDefautDoc - this can be 
-		 *					a) string = the name of the class
-		 *					b) object = an instance of the class
-		 *					c) null   = reset to default
-		 */
-		
+	/**
+	 *	@purpose: 	This sets the defaultDocumentType for this collection
+	 *	@param:		$classDefautDoc - this can be 
+	 *					a) string = the name of the class
+	 *					b) object = an instance of the class
+	 *					c) null   = reset to default
+	*/
+	public 	function setDefaultDocumentType($mixedClassDefaultDoc = null)			{	
 		//it's null - return a default Mongo_Document
 		if(is_null($mixedClassDefaultDoc))
 			return $this->_strClassDocumentType = Mongo_Connection::TYPE_MONGO_DOCUMENT;
@@ -213,25 +225,25 @@ class Mongo_Collection implements Countable, Mongo_Connection_Interface				{
 			
 		throw new Mongo_Exception(Mongo_Exception::ERROR_MISSING_VALUES);
 	}
-	
-	public  function insert(Mongo_Document $mongoDocument, 	$bSafe = true)			{
-		/**
-		 *	@purpose:	Inserts a query into the database
-		 *	@param:		$mongoDocument - the document to be inserted
-		 *	@param:		$bSafe		- true (default) => it will wait for success before returning
-		 *	@return:	array of the data returned (typically this includes a MongoId field)
-		 *
-		 */
+	/**
+	 *	@purpose:	Inserts a query into the database
+	 *	@param:		$mongoDocument - the document to be inserted
+	 *	@param:		$bSafe		- true (default) => it will wait for success before returning
+	 *	@return:	array of the data returned (typically this includes a MongoId field)
+	 *
+	*/
+	public  function insert(Mongo_Document $mongoDocument, 	$bSafe = true)			{		
 		$options["safe"]	= $bSafe;
 		$arrDocument		= $mongoDocument->export();
 		$this->raw_mongoCollection()->insert($arrDocument, $options);
 		return $mongoDocument;
 	}
+	/**
+	 *	@purpose:	Performs an Upsert on the Mongo_Document
+	 *	@param:		$mongoDocument - the document to be saved
+	*/
 	public  function save(Mongo_Document $mongoDocument, 	$bSafe = true)			{
-		/**
-		 *	@purpose:	Performs an Upsert on the Mongo_Document
-		 *	@param:		$mongoDocument - the document to be saved
-		 */
+		
 		$arrDocument		= $mongoDocument->export();
 		
 		//Now check that the Document and Collection belong to same Collection and same Database
@@ -251,6 +263,32 @@ class Mongo_Collection implements Countable, Mongo_Connection_Interface				{
 		$this->raw_mongoCollection()->save($arrDocument, $options);
 		return $this->createDocument($arrDocument);
 	}
+	/**
+	 *	@purpose:	performs an update (upsert)
+	*/
+	public  function update ( Mongo_Document 	$mongoDocument
+							, Array				$arrCriteria
+							, Array 			$arrNewObject)						{
+
+		//Now check that the Document and Collection belong to same Collection and same Database
+		if( !is_null($this->getDatabaseName()) 
+		&& (!is_null($mongoDocument->getDatabaseName()))
+		&& ($mongoDocument->getDatabaseName() 	!= $this->getDatabaseName()))
+			throw new Mongo_Exception(sprintf(Mongo_Exception::ERROR_DOCUMENT_WRONG_DATABASE
+												,$mongoDocument->getDatabaseName(),$this->getDatabaseName()));
+		if( !is_null($this->getCollectionName()) 
+		&& (!is_null($mongoDocument->getCollectionName()))
+		&& ($mongoDocument->getCollectionName() 	!= $this->getCollectionName()))
+			throw new Mongo_Exception(sprintf(Mongo_Exception::ERROR_DOCUMENT_WRONG_COLLECTION
+												,$mongoDocument->getCollectionName(),$this->getCollectionName()));
+		//Now check that the Required parameters are all valid
+		$options["safe"]		= true;
+		$options["multiple"]	= false;
+		$options["upsert"]		= true;
+		$this->raw_mongoCollection()->update($arrCriteria, $arrNewObject, $options);
+		$arrDocument["_id"]		= $mongoDocument->_MongoId;
+		return $this->findOne($arrDocument);
+							}
 	public 	function addToArray(Mongo_Document $mongoDocument, $strProperty, 
 								$strItemToAdd, $bUnique)							{
 		/**
@@ -258,7 +296,7 @@ class Mongo_Collection implements Countable, Mongo_Connection_Interface				{
 		 *				The Mongo_Document must be saved first so that we have a _id field
 		 *	@param:		$mongoDocument - the document to update
 		 *	@param:		
-		 */
+		**/
 		if(!$mongoDocument->nameExists(Mongo_Document_Abstract::FIELD_ID))
 			throw new Mongo_Exception(Mongo_Exception::ERROR_MUST_SAVE_FIRST);
 		if($mongoDocument->isClosed() && !$mongoDocument->isPropertyRequired($strProperty))
@@ -281,7 +319,7 @@ class Mongo_Collection implements Countable, Mongo_Connection_Interface				{
 		/**
 		 *	@purpose: 	Helper function to ensure that the mongoCollection is always valid
 		 *			 	It is not expected that this will need to be called very frequently, however....
-		 */
+		**/
 		if($this->isConnected())
 			return $this->_rawMongoCollection;
 		
@@ -296,19 +334,19 @@ class Mongo_Collection implements Countable, Mongo_Connection_Interface				{
 	public function connect()														{
 		/**
 		 *	@purpose: 	This attempts to crate the raw_mongoCollection
-		 */
+		**/
 		$this->raw_mongoCollection();
 	}
 	public  function isConnected()													{
 		/**
 		 *	@purpose:	Is this collection connected to the database
-		 */
+		**/
 		return !is_null($this->_rawMongoCollection);
 	}
 	public	function setConnection(Mongo_Connection $mongoConnection)				{
 		/**
 		 *	@purpose:	Sets the current Connection
-		 */
+		**/
 		$this->_Mongo_Connection	= $mongoConnection;
 		return true;
 	}

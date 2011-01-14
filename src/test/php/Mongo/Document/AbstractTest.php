@@ -5,7 +5,7 @@
  * @copyright  2010-12-17, Campaign and Digital Intelligence Ltd
  * @license    
  * @author     Tim Langley
- */
+**/
 
 class AbstractTest_Document extends Mongo_Document 						{
 	//This is a temp object to test an abstract class
@@ -66,7 +66,7 @@ class Mongo_Document_AbstractTest extends PHPUnit_Framework_TestCase	{
 																,	array("CompanyName"	=> "Company2"))
 									,	"DocumentSetType"=> array(	array("CompanyName"	=> "Company1")
 																,	array("CompanyName"	=> "Company2")
-																,	"_Type"		=> "Mongo_DocumentSet")
+																,	"_Type"		=> "Mongo_DocumentArray")
 									);
 		$docAbstract		= new AbstractTest_Document($arrData);
 		$this->assertEquals("AbstractTest_Document", $docAbstract[AbstractTest_Document::FIELD_TYPE]);
@@ -86,14 +86,14 @@ class Mongo_Document_AbstractTest extends PHPUnit_Framework_TestCase	{
 		$this->assertEquals("Langley",				$docDocumentType->LastName);
 		
 		$docDocumentSet		= $docAbstract->DocumentSet;
-		$this->assertEquals("Mongo_DocumentSet",	$docDocumentSet[AbstractTest_Document::FIELD_TYPE]);
+		$this->assertEquals("Mongo_DocumentArray",	$docDocumentSet[AbstractTest_Document::FIELD_TYPE]);
 		$this->assertEquals(2,						count($docDocumentSet));
 		$this->assertEquals("Company1",				$docDocumentSet[0]["CompanyName"]);
 		$this->assertEquals("Mongo_Document",		$docDocumentSet[0][AbstractTest_Document::FIELD_TYPE]);
 		
 		$docDocumentSetType		= $docAbstract->DocumentSetType;
 			//NOTE DocumentSet's arn't overridable
-		$this->assertEquals("Mongo_DocumentSet",	$docDocumentSetType[AbstractTest_Document::FIELD_TYPE]);
+		$this->assertEquals("Mongo_DocumentArray",	$docDocumentSetType[AbstractTest_Document::FIELD_TYPE]);
 		$this->assertEquals(2,						count($docDocumentSetType));
 	}
 	public function testFAIL_construct_reqs_null()						{
@@ -149,7 +149,7 @@ class Mongo_Document_AbstractTest extends PHPUnit_Framework_TestCase	{
 	public function testSUCCEED_construct_reqs_browsers()				{
 		$docAbstract				= new AbstractTest_Document_wReqs();
 		$this->assertEquals("AbstractTest_Document_wReqs", $docAbstract[AbstractTest_Document_wReqs::FIELD_TYPE]);
-		$docSet						= new Mongo_DocumentSet(null);
+		$docSet						= new Mongo_DocumentArray(null);
 //@TODO - there are a series of bugs here to resolve
 		$docAbstract->Browsers[0]	= $docSet;
 		$tim	= $docAbstract->Browsers;

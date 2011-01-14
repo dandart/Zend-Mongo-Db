@@ -5,7 +5,7 @@
  * @copyright  2010, Campaign and Digital Intelligence Ltd
  * @license    New BSD License
  * @author     Tim Langley
- */
+**/
 class Mongo_Exception extends Exception	{
 	const ERROR_ALREADY_SAVED				= "Can't create this document has already been saved";
 	const ERROR_ARRAY_WRONG_TYPE			= "The saved document is of the wrong class";

@@ -7,7 +7,7 @@
  * @author     Tim Langley
  * @todo:		Should make this more Zend friendly (ie taking a config object)
  * @todo:		Should support multiple connections (and slave only - read only connections)
- */
+**/
 
 class Mongo_Connection 																{
 	const	CONN_HOST_STRING						= "%s:%d,";
@@ -22,7 +22,7 @@ class Mongo_Connection 																{
 	
 	const	TYPE_DEFAULT_COLLECTION					= "Mongo_Collection";
 	const	TYPE_MONGO_DOCUMENT						= "Mongo_Document";
-	const	TYPE_MONGO_DOCUMENT_SET					= "Mongo_DocumentSet";
+	const	TYPE_MONGO_DOCUMENT_SET					= "Mongo_DocumentArray";
 	
 	private $_raw_mongo								= null;		//once connected this holds a Mongo object
 	private $_arrRawMongoDB							= array(); 	//This holds an associative array of MongoDB objects
@@ -34,7 +34,7 @@ class Mongo_Connection 																{
 		/**
 		 *	@purpose:	This private function manages the _raw_mongo parameter ensuring it's connected
 		 *	@return:	The _raw_mongo (Mongo) object
-		 */
+		**/
 		if($this->b_IsConnected)
 			return $this->_raw_mongo;
 		$this->_raw_mongo->Connect();
@@ -45,7 +45,7 @@ class Mongo_Connection 																{
 		/**
 		 *	@purpose:	This private function manages the _arrRawMongoDB parameter ensuring it's connected to a DB
 		 *	@return:	the _arrRawMongoDB (Mongo) object
-		 */
+		**/
 		if(is_null($strDatabaseName))												{
 			$strDatabaseName						= self::getDefaultDatabase();
 			if(is_null($strDatabaseName))
@@ -66,7 +66,7 @@ class Mongo_Connection 																{
 		 *	@param:		$options		= array of Mongo options
 		 *
 		 *	@todo:		Improve the $options so that this can take a Zend object too 	
-		 */
+		**/
 		$arrConnection		 	= $this->createConnectionArray($connection);
 		$connectionString		= $arrConnection[self::STR_CONNECTION];
 		$databaseName			= $arrConnection[self::STR_DATABASE];
@@ -83,7 +83,7 @@ class Mongo_Connection 																{
 	public  function __get($strCollectionName)										{
 		/**
 		 *	@purpose:	This is not implemented (because we have no way to capture the type of classCollection required)
-		 */
+		**/
 		throw new Mongo_Exception(Mongo_Exception::ERROR_NOT_IMPLEMENTED);
 	}
 	public 	function connect($strDatabaseName 		= null)							{
@@ -92,7 +92,7 @@ class Mongo_Connection 																{
 		 *					otherwise it tries to connect
 		 *	@param:		$strDatabaseName (if this is null then tries default
 		 *	@return:	true | exception
-		 */
+		**/
 		$this->raw_mongoDB($strDatabaseName);
 		return true;
 	}
@@ -101,7 +101,7 @@ class Mongo_Connection 																{
 		 *	@purpose:	This decodes a DBReference
 		 *	@param:		$arrReference = DBreference array ($id, $ref)
 		 *	@return:	null (if not found) | $arrDocument
-		 */
+		**/
 		if(!Mongo_Type_Reference::isRef($arrReference))
 			return null;
 		$mongo		= new Mongo(Mongo_Connection::$_defaultConnectionString);
@@ -114,7 +114,7 @@ class Mongo_Connection 																{
 		 *	@purpose: 	This drops the database 
 		 *				(if it's already connected to a different DB then this is cached and returned to later)
 		 *	@param:		$strDatabaseName 
-		 */
+		**/
 		if(is_null($strDatabaseName))
 			throw new Mongo_Exception(Mongo_Exception::ERROR_MISSING_DATABASE);
 		
@@ -128,7 +128,7 @@ class Mongo_Connection 																{
 		 *	@purpose: 	This opens a file from the file system and runs it within the MongoDb
 		 *				This is mainly used for unit testing where the file will contain details how to set-up the test
 		 *	@param:		$strFileNameAndPath - full name and path to the file
-		 */
+		**/
 		$handle					= fopen($strFileNameAndPath, "r");
 		if(!$handle)
 			throw new Mongo_Exception(Mongo_Exception::ERROR_FILE_NOT_FOUND);
@@ -142,7 +142,7 @@ class Mongo_Connection 																{
 		/**
 		 * @purpose:	This sets the current collection to $strCollectionName
 		 * @return:		This returns a Mongo_Collection (or child of this)
-		 */
+		**/
 		$classType		= (!is_null($strClassCollection) && class_exists($strClassCollection))?
 								$strClassCollection:self::TYPE_DEFAULT_COLLECTION;
 		$colCollection	= new $classType($strDatabaseName, $strCollectionName);
@@ -154,14 +154,14 @@ class Mongo_Connection 																{
 		 *	@purpose:	Returns an array of MongoConnection objects
 		 *	@return: 	array(MongoConnection, MongoConnection etc...)
 		 *	@todo: 		probably we should put this in to a "wrapped class" CollectionIterator
-		 */
+		**/
 		return $this->raw_mongoDB($strDatabaseName)->listCollections();
 	}
 	public 	function getDatabases()													{
 		/**
 		 *	@purpose: 	Returns a list of all the databases on this Mongo server
 		 *	@NOTE:		This function can be called WITHOUT the DatabaseName parameter being selected
-		 */
+		**/
 		$arrDatabases	= $this->raw_mongo()->listDBs();
 		//Time for some major sanity checking
 		if(!is_array($arrDatabases) && !is_set($arrDatabases["ok"]) && 1 != $arrDatabases["ok"] && !is_set($arrDatabases["databases"]))
@@ -173,7 +173,7 @@ class Mongo_Connection 																{
 		 * @purpose:	This sets the current collection to $strCollectionName
 		 * @NOTE:		This is a "naughty helper function for other classes"
 		 * @return:		This returns a MongoCollection
-		 */
+		**/
 		if(is_null($strCollectionName))
 			throw new Mongo_Exception(Mongo_Exception::ERROR_COLLECTION_NULL);
 		
@@ -184,14 +184,14 @@ class Mongo_Connection 																{
 		 * @purpose:	This returns the current database object
 		 * @NOTE:		This is a "naughty helper function for other classes"
 		 * @return:		This returns a MongoDB
-		 */
+		**/
 		return $this->raw_mongoDB($strDatabaseName);
 	}
 	public  function isConnected($strDatabaseName)									{
 		/**
 		 *	@purpose: 	Is this connected to a Mongo server (and database)
 		 *	@return:	true | false
-		 */
+		**/
 		return (array_key_exists($strDatabaseName,$this->_arrRawMongoDB) && !is_null($this->_arrRawMongoDB[$strDatabaseName]));
 	}
 	
@@ -217,7 +217,7 @@ class Mongo_Connection 																{
 		 *															mongo.defaultDB				= ""								
 		 *	@return:	array[0] = the connection string
 		 *				array[1] = the databasename
-		 */
+		**/
 		if(is_null($connection))													{
 			//If $connection is null then try to load the default one first
 			$strConnectionString		= Mongo_Connection::$_defaultConnectionString;

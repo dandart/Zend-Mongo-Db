@@ -5,9 +5,9 @@
  * @copyright  2010-12-10, Campaign and Digital Intelligence Ltd
  * @license    New BSD License
  * @author     Tim Langley
- */
+**/
 
-class Mongo_DocumentSetTest extends PHPUnit_Framework_TestCase	{	
+class Mongo_DocumentArrayTest extends PHPUnit_Framework_TestCase	{	
 	const	TEST_DATABASE	= "testMongo";
 	const	TEST_COLLECTION	= "testDocumentSetTest";
 	
@@ -24,7 +24,7 @@ class Mongo_DocumentSetTest extends PHPUnit_Framework_TestCase	{
 	public function testSUCCEED_createEmptyDocumentSet()		{
 		/**
 		 *	@NOTE: DocumentSets can't really be created by themselves - they are created out of a array in a Document
-		 */
+		**/
 		$mongoDocument			= new Mongo_Document();
 		$mongoDocument->setDatabaseName(self::TEST_DATABASE);
 		$mongoDocument->setCollectionName(self::TEST_COLLECTION);
@@ -34,9 +34,9 @@ class Mongo_DocumentSetTest extends PHPUnit_Framework_TestCase	{
 										,	array(	"Name" => "Jim"));
 		$mongoDocument->save();
 		$mongoDocumentSet		= $mongoDocument->Test;
-		$this->assertEquals("Mongo_DocumentSet", 	$mongoDocumentSet->_Type);
+		$this->assertEquals("Mongo_DocumentArray", 	$mongoDocumentSet->_Type);
 		$this->assertEquals(null, 					$mongoDocumentSet->_id);
-		$this->assertEquals("Mongo_DocumentSet", 	get_class($mongoDocumentSet));
+		$this->assertEquals("Mongo_DocumentArray", 	get_class($mongoDocumentSet));
 		//There are THREE elements
 		$this->assertEquals(3, 						count($mongoDocumentSet));
 		
@@ -47,7 +47,7 @@ class Mongo_DocumentSetTest extends PHPUnit_Framework_TestCase	{
 	public function testFAIL_get_notImplemented()				{
 		/**
 		 *	@NOTE: DocumentSets can't really be created by themselves - they are created out of a array in a Document
-		 */
+		**/
 		$mongoDocument			= new Mongo_Document();
 		$mongoDocument->setDatabaseName(self::TEST_DATABASE);
 		$mongoDocument->setCollectionName(self::TEST_COLLECTION);
@@ -66,7 +66,7 @@ class Mongo_DocumentSetTest extends PHPUnit_Framework_TestCase	{
 	public function testSUCCEED_iterator()						{
 		/**
 		 *	@NOTE: DocumentSets can't really be created by themselves - they are created out of a array in a Document
-		 */
+		**/
 		$mongoDocument			= new Mongo_Document();
 		$mongoDocument->setDatabaseName(self::TEST_DATABASE);
 		$mongoDocument->setCollectionName(self::TEST_COLLECTION);
@@ -76,7 +76,7 @@ class Mongo_DocumentSetTest extends PHPUnit_Framework_TestCase	{
 										,	array(	"Name" => "Jim"));
 		$mongoDocument->save();
 		$mongoDocumentSet		= $mongoDocument->Test;
-		$this->assertEquals("Mongo_DocumentSet", 	$mongoDocumentSet->_Type);
+		$this->assertEquals("Mongo_DocumentArray", 	$mongoDocumentSet->_Type);
 		
 		foreach($mongoDocumentSet AS $mongoDocument)			{
 			$this->assertEquals("Mongo_Document", 	$mongoDocument->_Type);
@@ -92,7 +92,7 @@ class Mongo_DocumentSetTest extends PHPUnit_Framework_TestCase	{
 										,	array(	"Name" => "Jim"));
 		$mongoDocument->save();
 		$mongoDocumentSet		= $mongoDocument->Test;
-		$this->assertEquals("Mongo_DocumentSet", 	$mongoDocumentSet->_Type);
+		$this->assertEquals("Mongo_DocumentArray", 	$mongoDocumentSet->_Type);
 		
 		$this->assertEquals("Mongo_Document", 		$mongoDocumentSet[0]->_Type);
 		$this->assertEquals("Mongo_Document", 		$mongoDocumentSet[1]->_Type);

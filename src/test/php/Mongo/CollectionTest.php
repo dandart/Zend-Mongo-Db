@@ -5,7 +5,7 @@
  * @copyright  2010, Campaign and Digital Intelligence Ltd
  * @license    New BSD License
  * @author     Tim Langley
- */
+**/
 
 class testCollection extends Mongo_Collection					{
 	const		COLLECTION_TEST			= 'Test';	

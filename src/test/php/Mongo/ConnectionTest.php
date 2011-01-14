@@ -5,7 +5,7 @@
  * @copyright  2010, Campaign and Digital Intelligence Ltd
  * @license    New BSD License
  * @author     Tim Langley
- */
+**/
 
 defined('MONGO_TEST_PATH') or define('MONGO_TEST_PATH', "");
 

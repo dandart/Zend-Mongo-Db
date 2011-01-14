@@ -4,7 +4,7 @@
  * @copyright  2010-12-21, Campaign and Digital Intelligence Ltd
  * @license    
  * @author     Tim Langley
- */
+**/
 db = db.getSisterDB("testMongo");
 db.CursorTest.drop();
 

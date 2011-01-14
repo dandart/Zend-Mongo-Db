@@ -5,7 +5,7 @@
  * @copyright  2010, Campaign and Digital Intelligence Ltd
  * @license    New BSD License
  * @author     Tim Langley
- */
+**/
 
 class DocumentTest_ChildDocument extends Mongo_Document				{
 	protected 	$_strDatabase 			= Mongo_DocumentTest::TEST_DATABASE;

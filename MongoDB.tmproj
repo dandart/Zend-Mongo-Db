@@ -3,7 +3,7 @@
 <plist version="1.0">
 <dict>
 	<key>currentDocument</key>
-	<string>src/test/testDB/Mongo/DbTest.js</string>
+	<string>src/main/php/Mongo/Document/Abstract.php</string>
 	<key>documents</key>
 	<array>
 		<dict>
@@ -21,68 +21,12 @@
 	<integer>312</integer>
 	<key>metaData</key>
 	<dict>
-		<key>src/main/php/Mongo/Collection.php</key>
-		<dict>
-			<key>caret</key>
-			<dict>
-				<key>column</key>
-				<integer>14</integer>
-				<key>line</key>
-				<integer>252</integer>
-			</dict>
-			<key>firstVisibleColumn</key>
-			<integer>0</integer>
-			<key>firstVisibleLine</key>
-			<integer>194</integer>
-		</dict>
 		<key>src/main/php/Mongo/Document.php</key>
 		<dict>
 			<key>caret</key>
 			<dict>
 				<key>column</key>
-				<integer>69</integer>
-				<key>line</key>
-				<integer>35</integer>
-			</dict>
-			<key>firstVisibleColumn</key>
-			<integer>0</integer>
-			<key>firstVisibleLine</key>
-			<integer>11</integer>
-		</dict>
-		<key>src/main/php/Mongo/Document/Abstract.php</key>
-		<dict>
-			<key>caret</key>
-			<dict>
-				<key>column</key>
-				<integer>3</integer>
-				<key>line</key>
-				<integer>143</integer>
-			</dict>
-			<key>firstVisibleColumn</key>
-			<integer>0</integer>
-			<key>firstVisibleLine</key>
-			<integer>117</integer>
-		</dict>
-		<key>src/main/php/Mongo/Type/Reference.php</key>
-		<dict>
-			<key>caret</key>
-			<dict>
-				<key>column</key>
-				<integer>76</integer>
-				<key>line</key>
-				<integer>26</integer>
-			</dict>
-			<key>firstVisibleColumn</key>
-			<integer>0</integer>
-			<key>firstVisibleLine</key>
-			<integer>6</integer>
-		</dict>
-		<key>src/test/testDB/Mongo/DbTest.js</key>
-		<dict>
-			<key>caret</key>
-			<dict>
-				<key>column</key>
-				<integer>0</integer>
+				<integer>60</integer>
 				<key>line</key>
 				<integer>10</integer>
 			</dict>
@@ -91,18 +35,73 @@
 			<key>firstVisibleLine</key>
 			<integer>0</integer>
 		</dict>
+		<key>src/main/php/Mongo/Document/Abstract.php</key>
+		<dict>
+			<key>caret</key>
+			<dict>
+				<key>column</key>
+				<integer>1</integer>
+				<key>line</key>
+				<integer>8</integer>
+			</dict>
+			<key>firstVisibleColumn</key>
+			<integer>0</integer>
+			<key>firstVisibleLine</key>
+			<integer>589</integer>
+		</dict>
+		<key>src/main/php/Mongo/DocumentArray.php</key>
+		<dict>
+			<key>caret</key>
+			<dict>
+				<key>column</key>
+				<integer>1</integer>
+				<key>line</key>
+				<integer>10</integer>
+			</dict>
+			<key>firstVisibleColumn</key>
+			<integer>0</integer>
+			<key>firstVisibleLine</key>
+			<integer>0</integer>
+		</dict>
+		<key>src/main/php/Mongo/Type/Reference.php</key>
+		<dict>
+			<key>caret</key>
+			<dict>
+				<key>column</key>
+				<integer>0</integer>
+				<key>line</key>
+				<integer>0</integer>
+			</dict>
+			<key>firstVisibleColumn</key>
+			<integer>0</integer>
+			<key>firstVisibleLine</key>
+			<integer>6</integer>
+		</dict>
+		<key>src/test/php/Mongo/DocumentTest.php</key>
+		<dict>
+			<key>caret</key>
+			<dict>
+				<key>column</key>
+				<integer>0</integer>
+				<key>line</key>
+				<integer>36</integer>
+			</dict>
+			<key>firstVisibleColumn</key>
+			<integer>0</integer>
+			<key>firstVisibleLine</key>
+			<integer>16</integer>
+		</dict>
 	</dict>
 	<key>openDocuments</key>
 	<array>
-		<string>src/main/php/Mongo/Document/Abstract.php</string>
-		<string>src/test/testDB/Mongo/DbTest.js</string>
-		<string>src/main/php/Mongo/Type/Reference.php</string>
+		<string>src/test/php/Mongo/DocumentTest.php</string>
 		<string>src/main/php/Mongo/Document.php</string>
-		<string>src/main/php/Mongo/Collection.php</string>
+		<string>src/main/php/Mongo/DocumentArray.php</string>
+		<string>src/main/php/Mongo/Document/Abstract.php</string>
 	</array>
 	<key>showFileHierarchyDrawer</key>
 	<true/>
 	<key>windowFrame</key>
-	<string>{{382, 88}, {1058, 687}}</string>
+	<string>{{340, 191}, {1058, 687}}</string>
 </dict>
 </plist>

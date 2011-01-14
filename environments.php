@@ -5,7 +5,7 @@
  *	@author 	Tim Langley
  *	@date		2010-09-01
  *
- */
+**/
 
 defined('ENVIRONMENT_DEVELOPMENT') 	or define('ENVIRONMENT_DEVELOPMENT','development');
 defined('ENVIRONMENT_TEST') 		or define('ENVIRONMENT_TEST',		'test');

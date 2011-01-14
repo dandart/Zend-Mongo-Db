@@ -7,19 +7,19 @@
  * @copyright  	2010, Campaign and Digital Intelligence Ltd
  * @license    	New BSD License
  * @author     	Tim Langley
- */
-class Mongo_Document extends Mongo_Document_Abstract 								{
+**/
+class Mongo_Document	extends Mongo_Document_Abstract 							{
 	
 	public  	function __get($name)												{
 		/**
 		 *	@purpose: Get the Document Properties
-		 */
+		**/
 		return $this->getByName($name);
 	}
 	public  	function __set($name, $value)										{
 		/**
 		 *	@purpose:	Set the Document Properties
-		 */
+		**/
 		return $this->setByName($name, $value);
 	}
 	
@@ -31,7 +31,7 @@ class Mongo_Document extends Mongo_Document_Abstract 								{
 		 *	@param:		$strElementToAdd- the item to add
 		 *	@param:		$bUnique	= true 	(perform a $addToSet)
 		 *							= false	(perform a $push)
-		 */
+		**/
 		$this->mongoCollection()->addToArray($this, $strElementName, $strItemToAdd, $bUnique);
 		$arrId[Mongo_Document_Abstract::FIELD_ID]
 							= $this->getByName(Mongo_Document_Abstract::FIELD_MONGO_ID);
@@ -44,7 +44,7 @@ class Mongo_Document extends Mongo_Document_Abstract 								{
 		/**
 		 *	@purpose:	Ok this a little naughty having this here (but it's a useful helper function)
 		 *				This creates a random md5 string
-		 */
+		**/
 		$chars 				= "abcdefghijkmnopqrstuvwxyz0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ!@£$%^&*()"; 
 		srand((double)microtime()*1000000); 
 		$strToken			= "";
@@ -53,21 +53,22 @@ class Mongo_Document extends Mongo_Document_Abstract 								{
 			$strToken 		.= substr($chars, rand() % $lenChars, 1);
 		return md5($strToken);
 	}
+	/**
+	 *	@purpose:	Returns whether this document has been saved before
+	 *				defined by whether the _id element exists
+	 *	@return:	true | false
+	**/
 	public 		function isNew()													{
-		/**
-		 *	@purpose:	Returns whether this document has been saved before
-		 *				defined by whether the _id element exists
-		 *	@return:	true | false
-		 */
+		
 		return !$this->nameExists(Mongo_Document_Abstract::FIELD_ID);
 	}
+	/**
+	 *	@purpose:	Saves the document (actually it does an upsert)
+	 *	@return:	fluent interface - returns $this
+	 *
+	 *	@todo:		Probably this should accept a query so that we can save a document at different positions
+	**/
 	public  	function save()														{
-		/**
-		 *	@purpose:	Saves the document (actually it does an upsert)
-		 *	@return:	fluent interface - returns $this
-		 *
-		 *	@todo:		Probably this should accept a query so that we can save a document at different positions
-		 */
 		$bNewDocument	= $this->isNew();
 		($bNewDocument)?$this->_PreInsert():$this->_PreUpdate();
 		$this->_PreSave();
@@ -77,6 +78,54 @@ class Mongo_Document extends Mongo_Document_Abstract 								{
 		($bNewDocument)?$this->_PostInsert():$this->_PostUpdate();
 		return $this;
 	}
+	public 		function update(Array $arrCriteria, Array $arrNewObject)			{
+		if($this->isNew())
+			throw new Mongo_Exception(Mongo_Exception::ERROR_MUST_SAVE_FIRST);
+		
+		$this->_PreUpdate();
+		$arrDocument	= $this->mongoCollection()->update($this, $arrCriteria, $arrNewObject)->export();
+		$this->setArrDocument($arrDocument);
+		$this->_PostUpdate();
+		return $this;
+	}
+	
+	//Implements Countable
+	public 		function count()															{
+		/**
+		 *	@purpose:	This counts the number of items in the Array
+		**/
+		$countSpecialKeys	= 0;
+		foreach(self::$_arrSpecialKeys AS $strKey)
+			if($this->nameExists($strKey))
+				$countSpecialKeys++;			
+		return count($this->export()) - $countSpecialKeys;
+	}
+	//Implements Iterator
+	public 		function current()															{
+		return $this->offsetGet($this->_intIteratorPosition);
+	}
+	public 		function key()																{
+		return $this->_intIteratorPosition;
+	}
+	public 		function next()																{
+		return ++$this->_intIteratorPosition;
+	}
+	public 		function rewind()															{
+		$this->_intIteratorPosition		= 0;
+	}
+	public 		function valid()															{
+		/**
+		 *	@purpose: 	valid is slightly "special" because we have to iterate through the array 
+		 *				BUT! we have to skip any of the "_arrSpecialKeys"
+		**/
+		if(!$this->offsetExists($this->_intIteratorPosition))
+			return false;
+		if(true == $this->isOffsetSpecial($this->_intIteratorPosition))						{
+			$this->next();
+			return $this->valid();
+		}
+		return true;
+	}
 	
 	//Overload these functions in children to gain functionaliaty
 	protected 	function _PreInsert()												{}
@@ -85,4 +134,4 @@ class Mongo_Document extends Mongo_Document_Abstract 								{
 	protected	function _PostSave()												{}
 	protected	function _PreUpdate()												{}
 	protected	function _PostUpdate()												{}
-}
+						}

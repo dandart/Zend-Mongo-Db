@@ -5,20 +5,20 @@
  * @copyright  2010, Campaign and Digital Intelligence Ltd
  * @license    New BSD License
  * @author     Tim Langley
- */
+**/
 class Mongo_Validate_Class extends Zend_Validate_Abstract	{
 	const CLASS_NOT_VALID = 'classNotValid';
 	
 	/**
      * @var array
-     */
+    **/
 	protected $_messageTemplates = array(
 		self::CLASS_NOT_VALID => "'%value%' is not a %class%"
 	);
 	
     /**
      * @var array
-     */
+    **/
     protected $_messageVariables = array(
         'class' => '_class'
     );

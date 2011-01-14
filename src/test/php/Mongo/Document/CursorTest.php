@@ -5,7 +5,7 @@
  * @copyright  2010-12-21, Campaign and Digital Intelligence Ltd
  * @license    
  * @author     Tim Langley
- */
+**/
 class Mongo_Document_CursorTest extends PHPUnit_Framework_TestCase	{	
 	const	TEST_DATABASE	= "testMongo";
 	const	TEST_COLLECTION	= "CursorTest";
@@ -22,7 +22,7 @@ class Mongo_Document_CursorTest extends PHPUnit_Framework_TestCase	{
 	public function testSUCCEED_construct_null()						{
 		/**
 		 *	We can't create cursors directly - instead they are a "by-product" of a collection->find()
-		 */
+		**/
 		$colCollection		= new Mongo_Collection(self::TEST_DATABASE, self::TEST_COLLECTION);
 		$colCollection->setConnection($this->_connMongo);
 		$cursor				= $colCollection->find();
@@ -32,7 +32,7 @@ class Mongo_Document_CursorTest extends PHPUnit_Framework_TestCase	{
 	public function testSUCCEED_count()									{
 		/**
 		 *	We can't create cursors directly - instead they are a "by-product" of a collection->find()
-		 */
+		**/
 		$colCollection		= new Mongo_Collection(self::TEST_DATABASE, self::TEST_COLLECTION);
 		$cursor				= $colCollection->find();
 		$this->assertEquals("Mongo_Document_Cursor", get_class($cursor));
@@ -42,7 +42,7 @@ class Mongo_Document_CursorTest extends PHPUnit_Framework_TestCase	{
 	public function testSUCCEED_limit()									{
 		/**
 		 *	We can't create cursors directly - instead they are a "by-product" of a collection->find()
-		 */
+		**/
 		$intLimit			= 3;
 		$colCollection		= new Mongo_Collection(self::TEST_DATABASE, self::TEST_COLLECTION);
 		$cursor				= $colCollection->find()->limit($intLimit);
@@ -54,7 +54,7 @@ class Mongo_Document_CursorTest extends PHPUnit_Framework_TestCase	{
 	public function testSUCCEED_skip()									{
 		/**
 		 *	We can't create cursors directly - instead they are a "by-product" of a collection->find()
-		 */
+		**/
 		$intSkip			= 5;
 		$colCollection		= new Mongo_Collection(self::TEST_DATABASE, self::TEST_COLLECTION);
 		$cursor				= $colCollection->find();
@@ -73,7 +73,7 @@ class Mongo_Document_CursorTest extends PHPUnit_Framework_TestCase	{
 	public function testSUCCEED_sort()									{
 		/**
 		 *	We can't create cursors directly - instead they are a "by-product" of a collection->find()
-		 */
+		**/
 		$arrSort			= array("FirstName" => 1);
 		$colCollection		= new Mongo_Collection(self::TEST_DATABASE, self::TEST_COLLECTION);
 		$cursor				= $colCollection->find()->sort($arrSort);

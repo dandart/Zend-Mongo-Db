@@ -5,13 +5,13 @@
  * @copyright  	2010-12-13, Campaign and Digital Intelligence Ltd
  * @license    
  * @author     	Tim Langley
- */
+**/
 class Mongo_Type_Reference 													{
 	public static function create(Mongo_Document $mongoDocument)			{
 		/**
 		 *	@purpose: 	This creates a DB Reference 
 		 *	@param:		Mongo_Document to create reference to
-		 */
+		**/
 		
 		//Is the Document null
 		if(is_null($mongoDocument))
@@ -35,7 +35,7 @@ class Mongo_Type_Reference 													{
 		/**
 		 *	@purpose: 	Decodes a DBReference
 		 *	@param:		
-		 */
+		**/
 		
 	}
 	public static function isRef($ref)										{
