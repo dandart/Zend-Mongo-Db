@@ -1,4 +1,4 @@
-<?
+<?php
 /**
  * @category   
  * @package    
@@ -35,7 +35,7 @@ class Mongo_DocumentArrayTest extends PHPUnit_Framework_TestCase	{
 		$mongoDocument->save();
 		$mongoDocumentSet		= $mongoDocument->Test;
 		$this->assertEquals("Mongo_DocumentArray", 	$mongoDocumentSet->_Type);
-		$this->assertEquals(null, 					$mongoDocumentSet->_id);
+		$this->assertEquals(null, 					$mongoDocumentSet->getId());
 		$this->assertEquals("Mongo_DocumentArray", 	get_class($mongoDocumentSet));
 		//There are THREE elements
 		$this->assertEquals(3, 						count($mongoDocumentSet));

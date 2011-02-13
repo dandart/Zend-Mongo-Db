@@ -1,4 +1,4 @@
-<?
+<?php
 /**
  * @category   
  * @package    
@@ -67,7 +67,7 @@ class Mongo_Document_CursorTest extends PHPUnit_Framework_TestCase	{
 		$this->assertEquals("Mongo_Document_Cursor", get_class($cursor2));
 		$Item				= $cursor2->getNext();
 		
-		$this->assertEquals($Item_5->_id,	$Item->_id);
+		$this->assertEquals($Item_5->getId(),	$Item->getId());
 	}
 	//testSort
 	public function testSUCCEED_sort()									{
@@ -85,6 +85,6 @@ class Mongo_Document_CursorTest extends PHPUnit_Framework_TestCase	{
 			$cursor->next();
 		$item10				= $cursor->getNext();
 		
-		$this->assertEquals($item1->_id,	$item10->_id);
+		$this->assertEquals($item1->getId(),	$item10->getId());
 	}
 }

@@ -1,4 +1,4 @@
-<?
+<?php
 /**
  * @category   	MongoDB
  * @package    	Mongo
@@ -8,7 +8,8 @@
  * @license    	New BSD License
  * @author     	Tim Langley
 **/
-class Mongo_Document	extends Mongo_Document_Abstract 							{
+class Mongo_Document	extends Mongo_Document_Abstract implements Iterator			{
+	private		$_intIteratorPosition	= 0;
 	
 	public  	function __get($name)												{
 		/**
@@ -33,8 +34,7 @@ class Mongo_Document	extends Mongo_Document_Abstract 							{
 		 *							= false	(perform a $push)
 		**/
 		$this->mongoCollection()->addToArray($this, $strElementName, $strItemToAdd, $bUnique);
-		$arrId[Mongo_Document_Abstract::FIELD_ID]
-							= $this->getByName(Mongo_Document_Abstract::FIELD_MONGO_ID);
+		$arrId				= array(Mongo_Document_Abstract::FIELD_ID => $this->getId());
 		$mongoDocument		= $this->mongoCollection()->findOne($arrId);
 		$arrDocument		= $mongoDocument->export();
 		$this->setArrDocument($arrDocument);
@@ -54,13 +54,19 @@ class Mongo_Document	extends Mongo_Document_Abstract 							{
 		return md5($strToken);
 	}
 	/**
+	 *	@purpose:	This executes the find function from the collection
+	 *	@return:	cursor
+	**/
+	public		function find($arrQuery, $arrFields)								{
+		return $this->mongoCollection()->find($arrQuery, $arrFields);
+	}
+	/**
 	 *	@purpose:	Returns whether this document has been saved before
 	 *				defined by whether the _id element exists
 	 *	@return:	true | false
 	**/
 	public 		function isNew()													{
-		
-		return !$this->nameExists(Mongo_Document_Abstract::FIELD_ID);
+		return $this->_bIsNew;
 	}
 	/**
 	 *	@purpose:	Saves the document (actually it does an upsert)
@@ -81,7 +87,6 @@ class Mongo_Document	extends Mongo_Document_Abstract 							{
 	public 		function update(Array $arrCriteria, Array $arrNewObject)			{
 		if($this->isNew())
 			throw new Mongo_Exception(Mongo_Exception::ERROR_MUST_SAVE_FIRST);
-		
 		$this->_PreUpdate();
 		$arrDocument	= $this->mongoCollection()->update($this, $arrCriteria, $arrNewObject)->export();
 		$this->setArrDocument($arrDocument);
@@ -102,10 +107,13 @@ class Mongo_Document	extends Mongo_Document_Abstract 							{
 	}
 	//Implements Iterator
 	public 		function current()															{
-		return $this->offsetGet($this->_intIteratorPosition);
+		//Now for a Document where the array is an associative array we need to get the Key Name a the offset X
+		$indexes 		= array_keys($this->_arrDocument);
+		return $this->getByName($indexes[$this->_intIteratorPosition]);
 	}
 	public 		function key()																{
-		return $this->_intIteratorPosition;
+		$indexes 		= array_keys($this->_arrDocument);
+		return $indexes[$this->_intIteratorPosition];
 	}
 	public 		function next()																{
 		return ++$this->_intIteratorPosition;
@@ -118,9 +126,12 @@ class Mongo_Document	extends Mongo_Document_Abstract 							{
 		 *	@purpose: 	valid is slightly "special" because we have to iterate through the array 
 		 *				BUT! we have to skip any of the "_arrSpecialKeys"
 		**/
-		if(!$this->offsetExists($this->_intIteratorPosition))
+		$indexes 		= array_keys($this->_arrDocument);
+		if(!isset($indexes[$this->_intIteratorPosition]))
 			return false;
-		if(true == $this->isOffsetSpecial($this->_intIteratorPosition))						{
+		
+		$value			= $indexes[$this->_intIteratorPosition];
+		if(array_search($value, self::$_arrSpecialKeys))									{
 			$this->next();
 			return $this->valid();
 		}

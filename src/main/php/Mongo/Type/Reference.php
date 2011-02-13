@@ -1,4 +1,4 @@
-<?
+<?php
 /**
  * @category   	MongoDB
  * @package    	Mongo
@@ -24,9 +24,8 @@ class Mongo_Type_Reference 													{
 		if(is_null($mongoDocument->getCollectionName()) || is_null($mongoDocument->getDatabaseName()))
 			throw new Mongo_Exception(Mongo_Exception::ERROR_MISSING_VALUES);
 		
-		$mongoId		= new MongoId($mongoDocument[Mongo_Document_Abstract::FIELD_ID]);
 		$arrReference	= MongoDBRef::create(	$mongoDocument->getCollectionName()
-											, 	$mongoId
+											, 	$mongoDocument->getId()
 											,	$mongoDocument->getDatabaseName());
 		$arrReference[Mongo_Document_Abstract::FIELD_TYPE]	= get_class($mongoDocument);
 		return $arrReference;

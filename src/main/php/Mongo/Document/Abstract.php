@@ -1,4 +1,4 @@
-<?
+<?php
 /**
  * @category   	MongoDB
  * @package    	Mongo
@@ -8,7 +8,7 @@
  * @author     	Tim Langley
 **/
 
-abstract class Mongo_Document_Abstract implements ArrayAccess, Mongo_Connection_Interface, Iterator, Countable {
+abstract class Mongo_Document_Abstract implements ArrayAccess, Mongo_Connection_Interface, Countable {
 	const		FIELD_CLOSED			= "_Closed";	//Holds true | false 
 														//(if true then Properties are limited to _requirements)
 	const		FIELD_COLLECTION		= "_ref:Collection";
@@ -27,13 +27,13 @@ abstract class Mongo_Document_Abstract implements ArrayAccess, Mongo_Connection_
 	
 	/****
 	 **	These are the parameters that can (optionally be overridden in the child classes)
-	 ****/
+	****/
 	protected 	$_strDatabase 			= null;
 	protected 	$_strCollection			= null;
 	protected	$_classCollectionType	= Mongo_Connection::TYPE_DEFAULT_COLLECTION;
 	/****
 	 **	END
-	 ****/
+	****/
 	
 	//This holds a cached array of ZendRequirements (either Validators or Filters)
 	//This is static so that we only load these once per request and they're live for all documents
@@ -51,12 +51,11 @@ abstract class Mongo_Document_Abstract implements ArrayAccess, Mongo_Connection_
 	private 	$_Mongo_Collection		= null;	//Holds the Mongo_Collection object
 												//Recommend accessing this through $this->mongoCollection() through
 	
-	private		$_intIteratorPosition	= 0;
-											
-	private 	$_arrDocument			= null;
+	protected 	$_arrDocument			= null;
 	protected	$_arrRequirements		= array();
 	protected	$_bClosed				= false;
-		
+	protected	$_bIsNew				= false;
+	
 	protected 	function mongoConnection()											{
 		if(!is_null($this->_Mongo_Connection))
 			return $this->_Mongo_Connection;
@@ -109,6 +108,7 @@ abstract class Mongo_Document_Abstract implements ArrayAccess, Mongo_Connection_
 		return $docAbstract;
 	}
 	protected 	function setArrDocument($arrDocument)								{
+		$this->_bIsNew								= is_null($arrDocument)?true:false;
 		if(!$arrDocument)
 			$arrDocument							= array();
 		$this->_arrDocument							= $arrDocument;
@@ -174,8 +174,12 @@ abstract class Mongo_Document_Abstract implements ArrayAccess, Mongo_Connection_
 		/**
 		 *	@purpose:	Sets the Array value (by name) ie: $Array->Name = Value
 		**/
-		if(false !== array_search($name, self::$_arrSpecialKeys))
+		if(false !== array_search($name, self::$_arrSpecialKeys) 
+			&& (self::FIELD_ID == $name 
+				&& isset($this->_arrDocument[self::FIELD_ID]) 
+				&& !is_null($this->_arrDocument[self::FIELD_ID])))					{
 			throw new Mongo_Exception(Mongo_Exception::ERROR_READ_ONLY);
+		}
 		return $this->_setValue($name, $value);
 	}
 	private 	function _setValue($key, $value)									{
@@ -211,6 +215,12 @@ abstract class Mongo_Document_Abstract implements ArrayAccess, Mongo_Connection_
 			return $this->_arrDocument[$key]	= $value;
 	}
 	
+	public 		function getId()													{
+		return isset($this->_arrDocument[self::FIELD_ID])?$this->_arrDocument[self::FIELD_ID]:null;
+	}
+	public		function getType()													{
+		return isset($this->_arrDocument[self::FIELD_TYPE])?$this->_arrDocument[self::FIELD_TYPE]:null;
+	}
 	public  	function getCollectionName()										{
 		/**
 		 *	@purpose: Returns the name of the Collection that this document belongs to
@@ -227,24 +237,13 @@ abstract class Mongo_Document_Abstract implements ArrayAccess, Mongo_Connection_
 		if(!$strDatabase)
 			throw new Mongo_Exception(Mongo_Exception::ERROR_MISSING_DATABASE);
 
-		/*
-		if($this->_strDatabase && $strDatabase != $this->_strDatabase)
-			throw new Mongo_Exception(sprintf(Mongo_Exception::ERROR_DOCUMENT_WRONG_DATABASE,$strDatabase,$this->_strDatabase));
-		*/
-		
 		$this->_strDatabase = $strDatabase; 
 		return true;
 	}
 	public  	function setCollectionName($strCollection)							{
 		if(!$strCollection)
 			throw new Mongo_Exception(Mongo_Exception::ERROR_COLLECTION_NULL);
-			
-	/*
-		if($this->_strCollection)
-			if($strCollection != $this->_strCollection)
-				throw new Mongo_Exception(sprintf(Mongo_Exception::ERROR_DOCUMENT_WRONG_COLLECTION
-											,$strCollection,$this->_strCollection));
-	*/
+
 		$this->_strCollection = $strCollection;
 		return true;
 	}
@@ -598,30 +597,5 @@ abstract class Mongo_Document_Abstract implements ArrayAccess, Mongo_Connection_
 				$countSpecialKeys++;			
 		return count($this->export()) - $countSpecialKeys;
 	}
-	//Implements Iterator
-	public 		function current()															{
-		return $this->offsetGet($this->_intIteratorPosition);
-	}
-	public 		function key()																{
-		return $this->_intIteratorPosition;
-	}
-	public 		function next()																{
-		return ++$this->_intIteratorPosition;
-	}
-	public 		function rewind()															{
-		$this->_intIteratorPosition		= 0;
-	}
-	public 		function valid()															{
-		/**
-		 *	@purpose: 	valid is slightly "special" because we have to iterate through the array 
-		 *				BUT! we have to skip any of the "_arrSpecialKeys"
-		**/
-		if(!$this->offsetExists($this->_intIteratorPosition))
-			return false;
-		if(true == $this->isOffsetSpecial($this->_intIteratorPosition))						{
-			$this->next();
-			return $this->valid();
-		}
-		return true;
-	}
+	
 }

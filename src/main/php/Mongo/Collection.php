@@ -1,4 +1,4 @@
-<?
+<?php
 /**
  * @category   MongoDB
  * @package    Mongo
@@ -286,7 +286,7 @@ class Mongo_Collection implements Countable, Mongo_Connection_Interface				{
 		$options["multiple"]	= false;
 		$options["upsert"]		= true;
 		$this->raw_mongoCollection()->update($arrCriteria, $arrNewObject, $options);
-		$arrDocument["_id"]		= $mongoDocument->_MongoId;
+		$arrDocument["_id"]		= $mongoDocument->getId();
 		return $this->findOne($arrDocument);
 							}
 	public 	function addToArray(Mongo_Document $mongoDocument, $strProperty, 
@@ -310,7 +310,7 @@ class Mongo_Collection implements Countable, Mongo_Connection_Interface				{
 		$options['multiple']= false;
 		
 		$arrId[Mongo_Document_Abstract::FIELD_ID]
-							= $mongoDocument->getByName(Mongo_Document_Abstract::FIELD_MONGO_ID);
+							= $mongoDocument->getId();
 		$this->raw_mongoCollection()->update($arrId, $arrAction, $options);
 		return true;
 								}

@@ -1,4 +1,4 @@
-<?
+<?php
 /**
  * @category   MongoDB
  * @package    Mongo
