@@ -13,7 +13,7 @@
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<phpmaven.version>1.1-SNAPSHOT</phpmaven.version>
 		<phpunit.version>3.3.9</phpunit.version>
-		<zend.version>10.11.1</zend.version>
+		<zend.version>1.11-SNAPSHOT</zend.version>
  	</properties>
 	
 	<developers>
@@ -24,9 +24,26 @@
 			<timezone>+0</timezone>
 		</developer>
 	</developers>
+ <distributionManagement>
+    <repository>
+      <id>canddi</id>
+      <url>scpexe://maven.canddi.mobi/var/maven/</url>
+    </repository>
+  </distributionManagement>
 
-	<repositories>	
-		<repository>
+  <repositories>
+    <repository>
+      <id>canddi</id>
+      <name>CANDDi</name>
+      <url>http://maven.canddi.mobi:8080/archiva/repository/canddi/</url>
+      <releases>
+        <enabled>true</enabled>
+      </releases>
+      <snapshots>
+        <enabled>true</enabled>
+      </snapshots>
+    </repository>
+	<repository>
 			<id>apache.snapshots</id>
 			<name>Maven Snapshot Repository</name>
 			<url>http://people.apache.org/maven-snapshot-repository</url>
