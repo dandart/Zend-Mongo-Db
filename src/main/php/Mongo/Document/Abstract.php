@@ -8,13 +8,13 @@
  * @author     	Tim Langley
 **/
 
-abstract class Mongo_Document_Abstract implements ArrayAccess, Mongo_Connection_Interface, Countable {
+abstract class Mongo_Document_Abstract implements ArrayAccess, Mongo_Connection_Interface, Countable 
+{
 	const		FIELD_CLOSED			= "_Closed";	//Holds true | false 
 														//(if true then Properties are limited to _requirements)
 	const		FIELD_COLLECTION		= "_ref:Collection";
 	const		FIELD_DATABASE			= "_ref:Database";
-	const		FIELD_ID				= "_id";		//Holds the MongoId
-	const		FIELD_MONGO_ID			= "_MongoId";
+	const		FIELD_ID				= "_id";		//Holds the MongoId (as a string)
 	const		FIELD_REFERENCE			= "_ref:Name";
 	const		FIELD_TYPE				= "_Type";		//Holds the "class" for this document
 	
@@ -22,6 +22,7 @@ abstract class Mongo_Document_Abstract implements ArrayAccess, Mongo_Connection_
 	const		MODIFIER_ADD_TO_SET		= '$addToSet';
 	const		MODIFIER_PUSH			= '$push';
 	
+	const		REQ_LAZY				= "Lazy";
 	const		REQ_OPTIONAL			= "Optional";
 	const		REQ_REQUIRED			= "Required";
 	
@@ -40,7 +41,7 @@ abstract class Mongo_Document_Abstract implements ArrayAccess, Mongo_Connection_
 	private		static $_cachedZendReq	= array();
 	//This holds the array of "special" (ie system private) keys
 	//This is static because it's really a constant
-	protected 	static $_arrSpecialKeys	= array ( self::FIELD_CLOSED
+	public 	    static $_arrSpecialKeys	= array ( self::FIELD_CLOSED
 												, self::FIELD_COLLECTION
 												, self::FIELD_ID
 												, self::FIELD_REFERENCE
@@ -56,7 +57,8 @@ abstract class Mongo_Document_Abstract implements ArrayAccess, Mongo_Connection_
 	protected	$_bClosed				= false;
 	protected	$_bIsNew				= false;
 	
-	protected 	function mongoConnection()											{
+	protected function mongoConnection()
+	{
 		if(!is_null($this->_Mongo_Connection))
 			return $this->_Mongo_Connection;
 		
@@ -72,7 +74,8 @@ abstract class Mongo_Document_Abstract implements ArrayAccess, Mongo_Connection_
 		$this->_Mongo_Connection 		= new Mongo_Connection();
 		return $this->_Mongo_Connection;
 	}	
-	protected	function mongoCollection()											{
+	protected function mongoCollection()
+	{
 		/**
 		 *	@purpose: 	This handles the mongoCollection parameter (if it's null then this tries to create from the connection...)
 		 *	@return:	class Mongo_Collection (or more specifically the class in $_classCollectionType)
@@ -90,12 +93,14 @@ abstract class Mongo_Document_Abstract implements ArrayAccess, Mongo_Connection_
 			 														 ,	$this->_classCollectionType);
 		return $this->_Mongo_Collection;
 	}
-	public 		final function __construct($arrDocument = null)						{
+	public final function __construct($arrDocument = null)
+	{
 		$this->setArrDocument($arrDocument);
 		//Clean up the requirements
 		$this->_arrRequirements			= $this->makeRequirementsTidy($this->_arrRequirements);
 	}
-	private		function createDocument($classDocument, $arrData, $strDatabase, $bSameColn = true){
+	private function createDocument($classDocument, $arrData, $strDatabase, $bSameColn = true)
+	{
 		$docAbstract		= new $classDocument($arrData);
 		if($this->_Mongo_Connection)
 			$docAbstract->setConnection($this->_Mongo_Connection);
@@ -107,7 +112,8 @@ abstract class Mongo_Document_Abstract implements ArrayAccess, Mongo_Connection_
 			$docAbstract->setCollectionName($this->_strCollection);
 		return $docAbstract;
 	}
-	protected 	function setArrDocument($arrDocument)								{
+	protected function setArrDocument($arrDocument)
+	{
 		$this->_bIsNew								= is_null($arrDocument)?true:false;
 		if(!$arrDocument)
 			$arrDocument							= array();
@@ -121,26 +127,24 @@ abstract class Mongo_Document_Abstract implements ArrayAccess, Mongo_Connection_
 		if($this->_bClosed)
 			$this->_arrDocument[self::FIELD_CLOSED]	= $this->_bClosed;
 	}
-	public		function getByName($name)											{
+	public function getByName($name)
+	{
 		//firstly if the property doesn't exist then leave this
 		if(!$this->nameExists($name) && !$this->requirementExists($name))
 			return null;
 		return $this->_getValue($name);
 	}
-	private 	function _getValue($key)											{
-		/**
-		 *	@purpose:	getValue - this decodes the values in _arrDocument (ie is Array, value etc...)
-		 *	@param:		$key	 - EITHER! the $arrDocument->Name or $arrDocument[(int)offset]
-		**/
+	/**
+	 *	@purpose:	getValue - this decodes the values in _arrDocument (ie is Array, value etc...)
+	 *	@param:		$key	 - EITHER! the $arrDocument->Name or $arrDocument[(int)offset]
+	**/
+	private function _getValue($key)
+	{
 		$data	= (isset($this->_arrDocument[$key]))?$this->_arrDocument[$key]:null;
-		if(!is_array($data))														{
+		if(!is_array($data))
+		{
 			if(self::FIELD_ID 		== $key)
 				return (string)$data;
-			if(self::FIELD_MONGO_ID == $key)										{
-				if(is_null($this->_arrDocument[self::FIELD_ID]))
-					return null;
-				return new MongoId($this->_arrDocument[self::FIELD_ID]);
-			}
 			
 			$arrRequirements 	= (isset($this->_arrRequirements[$key]))?$this->_arrRequirements[$key]:null;
 			$classDocument		= self::getDocumentClass(null, null, $arrRequirements);
@@ -164,32 +168,33 @@ abstract class Mongo_Document_Abstract implements ArrayAccess, Mongo_Connection_
 		}
 		//We try to determine the type of document
 		$arrArrayKeys	= array_keys($data);
-		$strDefault		= (0 === $arrArrayKeys[0])?Mongo_Connection::TYPE_MONGO_DOCUMENT_SET:Mongo_Connection::TYPE_MONGO_DOCUMENT;
+		$strDefault		= (		isset($arrArrayKeys[0]) 
+							&&  0 === $arrArrayKeys[0])?Mongo_Connection::TYPE_MONGO_DOCUMENT_SET:Mongo_Connection::TYPE_MONGO_DOCUMENT;
 		$arrRequirements= (isset($this->_arrRequirements[$key]))?$this->_arrRequirements[$key]:null;
 		$classDocument	= self::getDocumentClass($strDefault, $data, $arrRequirements);
 		
 		return $this->createDocument($classDocument, $data, $this->getDatabaseName());
 	}
-	protected	function setByName($name, $value)									{
-		/**
-		 *	@purpose:	Sets the Array value (by name) ie: $Array->Name = Value
-		**/
+	/**
+	 *	@purpose:	Sets the Array value (by name) ie: $Array->Name = Value
+	**/
+	protected	function setByName($name, $value)
+	{
 		if(false !== array_search($name, self::$_arrSpecialKeys) 
-			&& (self::FIELD_ID == $name 
-				&& isset($this->_arrDocument[self::FIELD_ID]) 
-				&& !is_null($this->_arrDocument[self::FIELD_ID])))					{
+		&& (self::FIELD_ID == $name 
+		&& isset($this->_arrDocument[self::FIELD_ID]) 
+		&& !is_null($this->_arrDocument[self::FIELD_ID])))
 			throw new Mongo_Exception(Mongo_Exception::ERROR_READ_ONLY);
-		}
 		return $this->_setValue($name, $value);
 	}
-	private 	function _setValue($key, $value)									{
-		/**
-		 *	@purpose: 	This does the actual setting of the value
-		 *				DO NOT CALL THIS DIRECTLY - use setByName (for names) or offsetSet (for offsets)
-		 *	@key:		The array key or the offset	
-		 *	@value:		The value to set it to
-		**/
-		
+	/**
+	 *	@purpose: 	This does the actual setting of the value
+	 *				DO NOT CALL THIS DIRECTLY - use setByName (for names) or offsetSet (for offsets)
+	 *	@key:		The array key or the offset	
+	 *	@value:		The value to set it to
+	**/
+	private 	function _setValue($key, $value)
+	{
 		//If this is a Closed Document then validate that Key is in Requirements
 		if(		isset($this->_arrDocument[self::FIELD_CLOSED])
 			&& 	true 	==  $this->_arrDocument[self::FIELD_CLOSED]
@@ -202,7 +207,8 @@ abstract class Mongo_Document_Abstract implements ArrayAccess, Mongo_Connection_
 		if (!is_null($value) && !$validators->isValid($value))
 			throw new Mongo_Exception(implode($validators->getMessages(), "\n"));
 		
-		if(is_null($value))															{
+		if(is_null($value))
+		{
 			unset($this->_arrDocument[$key]);
 			return null;
 		}
@@ -215,32 +221,38 @@ abstract class Mongo_Document_Abstract implements ArrayAccess, Mongo_Connection_
 			return $this->_arrDocument[$key]	= $value;
 	}
 	
-	public 		function getId()													{
+	public 		function getId()
+	{
 		return isset($this->_arrDocument[self::FIELD_ID])?$this->_arrDocument[self::FIELD_ID]:null;
 	}
-	public		function getType()													{
+	public		function getType()
+	{
 		return isset($this->_arrDocument[self::FIELD_TYPE])?$this->_arrDocument[self::FIELD_TYPE]:null;
 	}
-	public  	function getCollectionName()										{
-		/**
-		 *	@purpose: Returns the name of the Collection that this document belongs to
-		**/
+	/**
+	 *	@purpose: Returns the name of the Collection that this document belongs to
+	**/
+	public  	function getCollectionName()
+	{
 		return $this->_strCollection;
 	}
-	public  	function getDatabaseName()											{
-		/**
-		 *	@purpose:	Returns the name of the database that this document belongs to
-		**/
+	/**
+	 *	@purpose:	Returns the name of the database that this document belongs to
+	**/
+	public  	function getDatabaseName()
+	{
 		return $this->_strDatabase;
 	}
-	public  	function setDatabaseName($strDatabase)								{
+	public  	function setDatabaseName($strDatabase)
+	{
 		if(!$strDatabase)
 			throw new Mongo_Exception(Mongo_Exception::ERROR_MISSING_DATABASE);
 
 		$this->_strDatabase = $strDatabase; 
 		return true;
 	}
-	public  	function setCollectionName($strCollection)							{
+	public  	function setCollectionName($strCollection)
+	{
 		if(!$strCollection)
 			throw new Mongo_Exception(Mongo_Exception::ERROR_COLLECTION_NULL);
 
@@ -248,12 +260,13 @@ abstract class Mongo_Document_Abstract implements ArrayAccess, Mongo_Connection_
 		return true;
 	}
 	
-	public  	function export()													{
-		/**
-		 *	@purpose:	Returns the document as an array 
-		 *				NOTE: This does an integrity check to ensure that all require options are included
-		 *	@return:	$_arrDocument
-		**/
+	/**
+	 *	@purpose:	Returns the document as an array 
+	 *				NOTE: This does an integrity check to ensure that all require options are included
+	 *	@return:	$_arrDocument
+	**/
+	public  	function export($bJustRequired = false)
+	{	
 		// make sure required properties are not empty
 		$requiredProperties = $this->getPropertiesWithRequirement(self::REQ_REQUIRED);
 		foreach ($requiredProperties as $property)
@@ -272,26 +285,34 @@ abstract class Mongo_Document_Abstract implements ArrayAccess, Mongo_Connection_
 					throw new Mongo_Exception(sprintf(Mongo_Exception::ERROR_CLOSED_DOCUMENT, $key));
 			}
 		$this->_arrDocument[self::FIELD_TYPE]	= get_class($this);
-		return $this->_arrDocument;
+		
+		if(false == $bJustRequired)
+			return $this->_arrDocument;
+		//Otherwise lets intersect so that we only get the required stuff
+		return array_intersect_key($this->_arrDocument, $this->_arrRequirements);	
 	}
 	
 	//The Requirements code
-	public 		function getPropertiesWithRequirement($requirement)					{
+	public 		function getPropertiesWithRequirement($requirement)
+	{
 		/**
 		 *	@purpose: 	Returns an array of all the requirements which have ONE specific requirement
 		 *				Example: find all the requirements which have "Required"
 		**/
 		$properties = array();
-		foreach ($this->_arrRequirements as $property => $requirementList) 			{
+		foreach ($this->_arrRequirements as $property => $requirementList)
+		{
 			if (strpos($property, '.') > 0) 
 				continue;
-			if (array_key_exists($requirement, $requirementList)) {
+			if (array_key_exists($requirement, $requirementList))
+			{
 				$properties[] = $property;
 			}
 		}
 		return $properties;
 	}
-	public 		function getFilters($strProperty)									{
+	public 		function getFilters($strProperty)
+	{
 		/**
 		 *	@purpose:	Get all the filters attached to a specific property
 		 *	@param:		$strProperty
@@ -301,7 +322,8 @@ abstract class Mongo_Document_Abstract implements ArrayAccess, Mongo_Connection_
 		if (!array_key_exists($strProperty, $this->_arrRequirements)) 
 			return $filters;
 		
-		foreach ($this->_arrRequirements[$strProperty] as $requirement => $options)	{
+		foreach ($this->_arrRequirements[$strProperty] as $requirement => $options)
+		{
 			$filter 	 = $this->retrieveZendReq($requirement, $options);
 			if (!$filter || !($filter instanceof Zend_Filter_Interface)) 
 				continue;
@@ -309,7 +331,8 @@ abstract class Mongo_Document_Abstract implements ArrayAccess, Mongo_Connection_
 		}
 		return $filters;
 	}
-	public 		function getValidators($strProperty)								{
+	public 		function getValidators($strProperty)
+	{
 		/**
 		 *	@purpose:	Get all the validators attached to a specific property
 		 *	@param:		$strProperty
@@ -318,7 +341,8 @@ abstract class Mongo_Document_Abstract implements ArrayAccess, Mongo_Connection_
 		$validators 		= new Zend_Validate();
 		if (!array_key_exists($strProperty, $this->_arrRequirements)) 
 			return $validators;
-		foreach ($this->_arrRequirements[$strProperty] as $requirement => $options) {
+		foreach ($this->_arrRequirements[$strProperty] as $requirement => $options)
+		{
 			$validator 		= $this->retrieveZendReq($requirement, $options);
 			if (!$validator || !($validator instanceof Zend_Validate_Interface)) 
 				continue;
@@ -326,32 +350,37 @@ abstract class Mongo_Document_Abstract implements ArrayAccess, Mongo_Connection_
 		}
 		return $validators;
 	}
-	public 		function isValid($property, $value)									{
+	public 		function isValid($property, $value)
+	{
 		/**
 		 *	@purpose: 	Checks if the $value is valid for the $property
 		 *	@return:	true | false
 		**/
 		return $this->getValidators($property)->isValid($value);
 	}
-	private  	function makeRequirementsTidy(array $requirements) 					{
+	private  	function makeRequirementsTidy(array $requirements)
+	{
 		/**
 		 *	@purpose:	This "tidies up" the requirements into a "neat list"
 		**/
 		
 		//Firstly lets check if we are dealing with a "pull out of existing object" situtation
 		if(		isset($requirements[self::FIELD_COLLECTION]) 
-			|| 	isset($requirements[self::FIELD_REFERENCE]))						{
+			|| 	isset($requirements[self::FIELD_REFERENCE]))
+			{
 				
 				//WE STILL HAVE TO IMPLEMENT THIS
 					throw new Mongo_Exception(Mongo_Exception::ERROR_NOT_IMPLEMENTED);
 				
 			}
 		
-		foreach ($requirements as $property => $requirementList) 					{
+		foreach ($requirements as $property => $requirementList)
+		{
 			if (!is_array($requirementList))
 				$requirements[$property] 				= array($requirementList);
 			$newRequirementList = array();
-			foreach ($requirements[$property] as $key => $requirement) 				{
+			foreach ($requirements[$property] as $key => $requirement)
+			{
 				if (is_numeric($key))
 					$newRequirementList[$requirement] 	= null;
 				else 
@@ -361,7 +390,8 @@ abstract class Mongo_Document_Abstract implements ArrayAccess, Mongo_Connection_
 		}
 		return $requirements;
 	}
-	public		function requirementExists($name)									{
+	public		function requirementExists($name)
+	{
 		/**
 		 *	@purpose:	Checks if the required name exists in _arrRequirement 
 		 *	@param:		$name - the name of the parameter $_arrRequirement->Name
@@ -371,7 +401,8 @@ abstract class Mongo_Document_Abstract implements ArrayAccess, Mongo_Connection_
 			return false;
 		return isset($this->_arrRequirements[$name]);
 	}
-	public 	function setRequirement($strProperty, $requirement, $arrOptions = null)	{
+	public 	function setRequirement($strProperty, $requirement, $arrOptions = null)
+	{
 		/**
 		 *	@purpose:	This sets the the options for a specific requirement for a specific property
 		 *				If the property already has this requirement then it's over-written
@@ -384,7 +415,8 @@ abstract class Mongo_Document_Abstract implements ArrayAccess, Mongo_Connection_
 		
 		$this->_arrRequirements[$strProperty][$requirement] 	= $arrOptions;
 	}
-	public 		function unsetRequirement($strProperty, $requirement)				{
+	public 		function unsetRequirement($strProperty, $requirement)
+	{
 		/**
 		 *	@purpose:	Unsets a requirement for a specific property
 		 *	@param:		$strProperty	- the property field to set requirement for
@@ -394,14 +426,16 @@ abstract class Mongo_Document_Abstract implements ArrayAccess, Mongo_Connection_
 			return true;
 		
 		foreach ($this->_arrRequirements[$strProperty] as $requirementItem => $options)
-			if ($requirement === $requirementItem) 									{
+			if ($requirement === $requirementItem)
+			{
 				unset($this->_arrRequirements[$strProperty][$requirementItem]);
 				return true;
 			}
 		return true;
 	}
 		//Caching the Zend Requirements
-	public 		function createZendObject($name, $options = null)					{
+	public 		function createZendObject($name, $options = null)
+	{
 		$arrName		= explode("_", $name);
 		$instanceClass 	= 'Zend_'.$name;
 		$interfaceClass	= 'Zend_'.$arrName[0].'_Interface';
@@ -412,15 +446,18 @@ abstract class Mongo_Document_Abstract implements ArrayAccess, Mongo_Connection_
 			return null;
 		return $validator;
 	}
-	public 	 	function retrieveZendReq($name, $options = null)					{
+	public 	 	function retrieveZendReq($name, $options = null)
+	{
 		/**
 		 *	@purpose: 	We try to cache requirement items for speed
 		 *	@param:		$name		the name of the requirement to cache (ex: Required, StringLower etc...)
 		 *	@param:		$options (optional) anything to pass to the requirement constructor
 		**/
-		if (!array_key_exists($name, self::$_cachedZendReq)) 						{
+		if (!array_key_exists($name, self::$_cachedZendReq))
+		{
 			//ok - we got this far now to actually create the requirements
-			switch($name)															{
+			switch($name)
+			{
 				case 'Mongo_Document':
 					self::$_cachedZendReq[$name]	= new Mongo_Validate_Class('Mongo_Document');
 					break;
@@ -462,14 +499,16 @@ abstract class Mongo_Document_Abstract implements ArrayAccess, Mongo_Connection_
 	}
 	
 	//For Closed Documents
-	public		function isClosed()													{
+	public		function isClosed()
+	{
 		/**
 		 *	@purpose:	Is this a closed Document
 		 *	@return:	true | false
 		**/
 		return $this->_bClosed;
 	}
-	public 		function isPropertyRequired($strRequirement)						{
+	public 		function isPropertyRequired($strRequirement)
+	{
 		/**
 		 *	@purpose:	Does this element have a required or optional flag set
 		 *	@param:		strRequirement	- the property to search on
@@ -490,7 +529,8 @@ abstract class Mongo_Document_Abstract implements ArrayAccess, Mongo_Connection_
 	}
 	
 	//DocumentClass
-	public static function getDocumentClass($strDefault, $arrDocument = null, $arrRequirements = null)		{
+	public static function getDocumentClass($strDefault, $arrDocument = null, $arrRequirements = null)
+	{
 		/**
 		 *	@purpose: 	This is a "global" helper function - it's used in collections, documentIterators, 
 		 *					documents and documentsets
@@ -520,7 +560,8 @@ abstract class Mongo_Document_Abstract implements ArrayAccess, Mongo_Connection_
 	}
 	
 	//Implements (for __get requests)
-	public 		function nameExists($name)											{
+	public 		function nameExists($name)
+	{
 		/**
 		 *	@purpose:	Checks if the required name exists in _arrDocument
 		 *	@param:		$name - the name of the parameter $_arrDocument->Name
@@ -528,11 +569,10 @@ abstract class Mongo_Document_Abstract implements ArrayAccess, Mongo_Connection_
 		**/
 		if(is_null($this->_arrDocument))
 			return false;
-		if(self::FIELD_MONGO_ID == $name)
-			$name	= self::FIELD_ID;
 		return isset($this->_arrDocument[$name]);
 	}
-	public 		function isOffsetSpecial($offset)									{
+	public 		function isOffsetSpecial($offset)
+	{
 		/**
 		 *	@purpose: 	Returns whether the $offset is in the _arrSpecialKeys 
 		 *	@param:		$offset	= integer the offset
@@ -546,48 +586,56 @@ abstract class Mongo_Document_Abstract implements ArrayAccess, Mongo_Connection_
 	}
 	
 	//Implements Mongo_Connection_Interface
-	public 		function connect()													{
+	public 		function connect()
+	{
 		//NOTE - this is handled differently in each class - hence we're throwing error here
 		if(!$this->isConnected())
 			$this->mongoCollection();
 		return true;
 	}
-	public		function isConnected()												{
+	public		function isConnected()
+	{
 		//NOTE - this is handled differently in each class - hence we're throwing error here
 		return is_null($this->_Mongo_Collection);
 	}
-	public 		function setConnection(Mongo_Connection $mongoConnection)			{
+	public 		function setConnection(Mongo_Connection $mongoConnection)
+	{
 		/**
 		 *	@purpose:	Sets the Connection for this document / document set
 		**/
 		$this->_Mongo_Connection	= $mongoConnection;
 	}
 	//Implements ArrayAccess
-	public    	function offsetExists($offset)										{
+	public    	function offsetExists($offset)
+	{
 		if(!$this->_arrDocument)
 			return false;
 		return isset($this->_arrDocument[$offset]);
 	}
-	public    	function offsetGet($offset)											{
+	public    	function offsetGet($offset)
+	{
 		if(!$this->offsetExists($offset))
 			return null;
 		return $this->_getValue($offset);
 	}
-	public		function offsetSet($offset, $value)									{
+	public		function offsetSet($offset, $value)
+	{
 		if(!$this->offsetExists($offset))
 			return null;
 		if(true == $this->isOffsetSpecial($offset))
 			throw new Mongo_Exception(Mongo_Exception::ERROR_READ_ONLY);
 		return $this->_setValue($offset, $value); 
 	}
-	public  	function offsetUnset($offset)										{
+	public  	function offsetUnset($offset)
+	{
 		if(!$this->_arrDocument)
 			return false;
 		unset($this->_arrDocument[$offset]);
 	}
 	
 	//Implements Countable
-	public 		function count()															{
+	public 		function count()
+	{
 		/**
 		 *	@purpose:	This counts the number of items in the Array
 		**/

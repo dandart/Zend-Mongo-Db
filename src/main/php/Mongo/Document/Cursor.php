@@ -22,7 +22,10 @@ class Mongo_Document_Cursor implements OuterIterator, Countable						{
 		$this->_Mongo_Connection	= $mongoConn;
 		$this->_strDatabaseName		= $strDatabaseName;
 	}
-	
+	public function getDatabaseName()
+	{
+	    return $this->_strDatabaseName;
+	}
 	public function limit($intLimit = 0)											{
 		/**
 		 *	@purpose: 	Limits the a number of results to return
@@ -74,9 +77,12 @@ class Mongo_Document_Cursor implements OuterIterator, Countable						{
 		$strDefault		= Mongo_Connection::TYPE_MONGO_DOCUMENT;
 		$classDocument	= Mongo_Document_Abstract::getDocumentClass($strDefault, $arrDocument);
 		$docDocument	= new $classDocument($arrDocument);
-		if($this->_Mongo_Connection)
-			$docDocument->setConnection($this->_Mongo_Connection);
-		$docDocument->setDatabaseName($this->_strDatabaseName);
+		if($classDocument instanceof Mongo_Document_Abstract)
+		{
+		    if($this->_Mongo_Connection)
+			    $docDocument->setConnection($this->_Mongo_Connection);
+		    $docDocument->setDatabaseName($this->_strDatabaseName);
+		}
 		return $docDocument;
 	}	
 	public function getNext()														{

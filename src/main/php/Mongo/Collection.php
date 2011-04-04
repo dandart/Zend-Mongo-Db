@@ -61,12 +61,15 @@ class Mongo_Collection implements Countable, Mongo_Connection_Interface				{
 		$classDocument				= $this->getDocumentType($arrDocument);
 		
 		$docAbstract				= new $classDocument($arrDocument);
-		if($this->_Mongo_Connection)
-			$docAbstract->setConnection($this->_Mongo_Connection);
-		if($this->_strDatabase)
-			$docAbstract->setDatabaseName($this->_strDatabase);
-		if($this->_strCollection)
-			$docAbstract->setCollectionName($this->_strCollection);
+		if($docAbstract instanceof Mongo_Document)
+		{
+		    if($this->_Mongo_Connection)
+			    $docAbstract->setConnection($this->_Mongo_Connection);
+		    if($this->_strDatabase)
+			    $docAbstract->setDatabaseName($this->_strDatabase);
+		    if($this->_strCollection)
+			    $docAbstract->setCollectionName($this->_strCollection);
+		}
 		return $docAbstract;
 	}
 	/**
@@ -239,6 +242,15 @@ class Mongo_Collection implements Countable, Mongo_Connection_Interface				{
 		return $mongoDocument;
 	}
 	/**
+	 *  Saves an array (rather than a Document)
+	**/
+	public function saveArray(Array $arrData, $bSafe = true)
+	{
+	    $options["safe"]	= $bSafe;
+		$this->raw_mongoCollection()->save($arrData, $options);
+		return $arrData;
+	}
+	/**
 	 *	@purpose:	Performs an Upsert on the Mongo_Document
 	 *	@param:		$mongoDocument - the document to be saved
 	*/
@@ -262,6 +274,17 @@ class Mongo_Collection implements Countable, Mongo_Connection_Interface				{
 		$options["safe"]	= $bSafe;
 		$this->raw_mongoCollection()->save($arrDocument, $options);
 		return $this->createDocument($arrDocument);
+	}
+	/**
+	 *  Saves an array (rather than a Document)
+	**/
+	public function updateArray(Array $arrCriteria, Array $arrNewObject, $bSafe = true, $bMultiple = false)
+	{
+		$options["safe"]		= $bSafe;
+		$options["multiple"]	= $bMultiple;
+		$options["upsert"]		= true;
+		$this->raw_mongoCollection()->update($arrCriteria, $arrNewObject, $options);
+		return true;
 	}
 	/**
 	 *	@purpose:	performs an update (upsert)
