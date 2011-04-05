@@ -4,8 +4,8 @@
 	<prerequisites>
 		<maven>2.0.7</maven>
 	</prerequisites>
-	<artifactId>Mongo</artifactId>
-	<groupId>MongoDB</groupId>
+	<artifactId>MongoDB</artifactId>
+	<groupId>Database</groupId>
 	<packaging>php</packaging>
 	<name>MongoDB</name>
 	<version>1.0-SNAPSHOT</version>
@@ -24,39 +24,40 @@
 			<timezone>+0</timezone>
 		</developer>
 	</developers>
- <distributionManagement>
-    <repository>
-      <id>canddi</id>
-      <url>scpexe://maven.canddi.mobi/var/maven/</url>
-    </repository>
-  </distributionManagement>
+    
+    <distributionManagement>
+        <repository>
+            <id>canddi</id>
+            <url>scpexe://maven.canddi.mobi/var/maven/</url>
+        </repository>
+    </distributionManagement>
 
-  <repositories>
-    <repository>
-      <id>canddi</id>
-      <name>CANDDi</name>
-      <url>http://maven.canddi.mobi:8080/archiva/repository/canddi/</url>
-      <releases>
-        <enabled>true</enabled>
-      </releases>
-      <snapshots>
-        <enabled>true</enabled>
-      </snapshots>
-    </repository>
-	<repository>
-			<id>apache.snapshots</id>
-			<name>Maven Snapshot Repository</name>
-			<url>http://people.apache.org/maven-snapshot-repository</url>
-			<snapshots>
-				<enabled>true</enabled>
-				<updatePolicy>daily</updatePolicy>
-			</snapshots>
-			<releases>
-				<enabled>false</enabled>
-				<updatePolicy>never</updatePolicy>
-			</releases>
-		</repository>
-	</repositories>
+    <repositories>
+        <repository>
+            <id>canddi</id>
+            <name>CANDDi</name>
+            <url>http://maven.canddi.mobi:8080/archiva/repository/canddi/</url>
+            <releases>
+                <enabled>true</enabled>
+            </releases>
+            <snapshots>
+                <enabled>true</enabled>
+            </snapshots>
+        </repository>
+        <repository>
+            <id>apache.snapshots</id>
+            <name>Maven Snapshot Repository</name>
+            <url>http://people.apache.org/maven-snapshot-repository</url>
+            <snapshots>
+                <enabled>true</enabled>
+                <updatePolicy>daily</updatePolicy>
+            </snapshots>
+            <releases>
+                <enabled>false</enabled>
+                <updatePolicy>never</updatePolicy>
+            </releases>
+        </repository>
+    </repositories>
 	
 	<build>
 		<plugins>
