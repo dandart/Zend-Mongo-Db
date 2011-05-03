@@ -33,7 +33,7 @@ class Mongo_Collection implements Countable, Mongo_Connection_Interface				{
 	 *									=> in this case we take the default connection and try to connect to $_strDatabase
 	 *					= a Collection
 	 *					= a Connection
-	*/
+    **/
 	public  final function __construct($strDatabaseName = null, $strCollectionName = null)	{
 		
 
@@ -47,7 +47,7 @@ class Mongo_Collection implements Countable, Mongo_Connection_Interface				{
 	/**
 	 *	@purpose: 	Returns the name of the collection
 	 *	@NOTE:		This does NOT mean that the collection is connected
-	*/
+    **/
 	public  function __toString()													{
 		
 		return $this->_strCollection;
@@ -74,7 +74,7 @@ class Mongo_Collection implements Countable, Mongo_Connection_Interface				{
 	}
 	/**
 	 *	@purpose:	Drops this connection
-	*/
+    **/
 	public  function drop()															{
 		
 		$return 	= $this->raw_mongoCollection()->drop();
@@ -86,7 +86,7 @@ class Mongo_Collection implements Countable, Mongo_Connection_Interface				{
 	 *	@param:		$fields	Array array(A,B,C) - the fields to return
 	 *	@param:		$sort	Array array(A => 1, B => -1 ) where A,B are the fields to sort on & 1 = ASC, -1 = DESC
 	 *	@return:	returns Mongo_Document_Cursor
-	*/
+    **/
 	public  function find($query = array(), $fields = array(), $sort = array())		{
 		
 		if(is_null($query) || is_null($fields))
@@ -101,7 +101,7 @@ class Mongo_Collection implements Countable, Mongo_Connection_Interface				{
 	 *	@param:		$fields	Array array(A,B,C) - the fields to return
 	 *	@return:	returns an object of Mongo_Document (or child of this)
 	 *
-	*/
+    **/
 	public  function findOne($query = array(), $fields = array())					{
 		
 		if(is_null($query) || is_null($fields))
@@ -117,7 +117,7 @@ class Mongo_Collection implements Countable, Mongo_Connection_Interface				{
 	/**
 	 *	@purpose:	Returns the name of the collection
 	 *	@return:	string - the collection name
-	*/
+    **/
 	public  function getCollectionName()											{
 		
 		return $this->raw_mongoCollection()->getName();
@@ -126,14 +126,14 @@ class Mongo_Collection implements Countable, Mongo_Connection_Interface				{
 	 *	@purpose:	Works out what type of Document class should be created
 	 *				NOTE: 	This checks if an existing document is trying to be "recreated" and if so it the _Type is valid
 	 *				SECOND:	This checks if the collection has a default type
-	*/
+    **/
 	private function getDocumentType($arrDocument = array())						{
 		
 		return Mongo_Document_Abstract::getDocumentClass($this->getDefaultDocumentType(), $arrDocument);
 	}
 	/**
 	 *	@purpose:	Returns the database that this Collection is attached to
-	*/
+    **/
 	public  function getDatabaseName()												{
 		
 		return $this->_strDatabase;
@@ -143,7 +143,7 @@ class Mongo_Collection implements Countable, Mongo_Connection_Interface				{
 	}
 	/**
 	 *	@purpose:	This PRIVATE function does the sanity checking on setting the collection
-	*/
+    **/
 	private function setCollection(MongoCollection $raw_MongoCollection = null)		{
 		
 		if(is_null($raw_MongoCollection))
@@ -196,7 +196,7 @@ class Mongo_Collection implements Countable, Mongo_Connection_Interface				{
 	/**
 	 *	@purpose:	decodes a DBReference
 	 *	@param:		$arrReference	= array like: array($ref, $id, $database)
-	*/
+    **/
 	public 	function decodeReference($arrReference)									{
 		
 		$arrDocument	= $this->raw_mongoCollection()->getDBRef($arrReference);
@@ -210,7 +210,7 @@ class Mongo_Collection implements Countable, Mongo_Connection_Interface				{
 	 *					a) string = the name of the class
 	 *					b) object = an instance of the class
 	 *					c) null   = reset to default
-	*/
+    **/
 	public 	function setDefaultDocumentType($mixedClassDefaultDoc = null)			{	
 		//it's null - return a default Mongo_Document
 		if(is_null($mixedClassDefaultDoc))
@@ -234,7 +234,7 @@ class Mongo_Collection implements Countable, Mongo_Connection_Interface				{
 	 *	@param:		$bSafe		- true (default) => it will wait for success before returning
 	 *	@return:	array of the data returned (typically this includes a MongoId field)
 	 *
-	*/
+    **/
 	public  function insert(Mongo_Document $mongoDocument, 	$bSafe = true)			{		
 		$options["safe"]	= $bSafe;
 		$arrDocument		= $mongoDocument->export();
@@ -253,7 +253,7 @@ class Mongo_Collection implements Countable, Mongo_Connection_Interface				{
 	/**
 	 *	@purpose:	Performs an Upsert on the Mongo_Document
 	 *	@param:		$mongoDocument - the document to be saved
-	*/
+    **/
 	public  function save(Mongo_Document $mongoDocument, 	$bSafe = true)			{
 		
 		$arrDocument		= $mongoDocument->export();
@@ -286,9 +286,14 @@ class Mongo_Collection implements Countable, Mongo_Connection_Interface				{
 		$this->raw_mongoCollection()->update($arrCriteria, $arrNewObject, $options);
 		return true;
 	}
+	public function removeArray(Array $arrCriteria)
+	{
+	    $options["safe"]		= $bSafe;
+	    return $this->raw_mongoCollection()->remove($arrCriteria, $options);
+	}
 	/**
 	 *	@purpose:	performs an update (upsert)
-	*/
+    **/
 	public  function update ( Mongo_Document 	$mongoDocument
 							, Array				$arrCriteria
 							, Array 			$arrNewObject)						{
