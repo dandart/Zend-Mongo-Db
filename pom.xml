@@ -27,7 +27,7 @@
     
     <distributionManagement>
         <repository>
-            <id>canddi</id>
+            <id>canddi-deploy</id>
             <url>scpexe://maven.canddi.mobi/var/maven/</url>
         </repository>
     </distributionManagement>
