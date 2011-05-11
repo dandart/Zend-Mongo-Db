@@ -11,5 +11,5 @@ db.dropDatabase();
 db = db.getSisterDB("testMongo");
 
 dateCreated = new Date();
-accountLCF  = { "AccountName":"LCF Computers Ltd", "AccountURL":"lcfcomputers", "DateCreated":dateCreated, "_Type":"Mongo_Document"};
+accountLCF  = { "AccountName":"LCF Computers Ltd", "AccountURL":"lcfcomputers", "DateCreated":dateCreated};
 db.Accounts.save(accountLCF);

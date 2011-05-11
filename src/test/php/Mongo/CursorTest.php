@@ -6,7 +6,7 @@
  * @license    
  * @author     Tim Langley
 **/
-class Mongo_Document_CursorTest extends PHPUnit_Framework_TestCase	{	
+class Mongo_CursorTest extends PHPUnit_Framework_TestCase	{	
 	const	TEST_DATABASE	= "testMongo";
 	const	TEST_COLLECTION	= "CursorTest";
 	
@@ -16,7 +16,7 @@ class Mongo_Document_CursorTest extends PHPUnit_Framework_TestCase	{
 		//Before we do anything we should drop any pre-existing test databases
 		$config			 	= new Zend_Config_Ini(MONGO_TEST_PATH.'mongo.ini', APPLICATION_ENV);
 		$this->_connMongo	= new Mongo_Connection($config->mongo);
-		$this->_connMongo->executeFile(MOCK_DB_PATH."/Mongo/Document/CursorTest.js");
+		$this->_connMongo->executeFile(MOCK_DB_PATH."/Mongo/CursorTest.js");
 	}
 	//testConstruct
 	public function testSUCCEED_construct_null()						{
@@ -26,7 +26,7 @@ class Mongo_Document_CursorTest extends PHPUnit_Framework_TestCase	{
 		$colCollection		= new Mongo_Collection(self::TEST_DATABASE, self::TEST_COLLECTION);
 		$colCollection->setConnection($this->_connMongo);
 		$cursor				= $colCollection->find();
-		$this->assertEquals("Mongo_Document_Cursor", get_class($cursor));
+		$this->assertEquals("Mongo_Cursor", get_class($cursor));
 	}
 	//testCount
 	public function testSUCCEED_count()									{
@@ -35,7 +35,7 @@ class Mongo_Document_CursorTest extends PHPUnit_Framework_TestCase	{
 		**/
 		$colCollection		= new Mongo_Collection(self::TEST_DATABASE, self::TEST_COLLECTION);
 		$cursor				= $colCollection->find();
-		$this->assertEquals("Mongo_Document_Cursor", get_class($cursor));
+		$this->assertEquals("Mongo_Cursor", get_class($cursor));
 		$this->assertEquals(10,						 count($cursor));
 	}
 	//testLimit
@@ -46,7 +46,7 @@ class Mongo_Document_CursorTest extends PHPUnit_Framework_TestCase	{
 		$intLimit			= 3;
 		$colCollection		= new Mongo_Collection(self::TEST_DATABASE, self::TEST_COLLECTION);
 		$cursor				= $colCollection->find()->limit($intLimit);
-		$this->assertEquals("Mongo_Document_Cursor", get_class($cursor));
+		$this->assertEquals("Mongo_Cursor", get_class($cursor));
 		$this->assertEquals(10,						 count($cursor));
 		$this->assertEquals($intLimit,				 $cursor->count(true));
 	}
@@ -58,16 +58,15 @@ class Mongo_Document_CursorTest extends PHPUnit_Framework_TestCase	{
 		$intSkip			= 5;
 		$colCollection		= new Mongo_Collection(self::TEST_DATABASE, self::TEST_COLLECTION);
 		$cursor				= $colCollection->find();
-		$this->assertEquals("Mongo_Document_Cursor", get_class($cursor));
+		$this->assertEquals("Mongo_Cursor", get_class($cursor));
 		for($intI = 0; $intI <= $intSkip; $intI++)
 			$cursor->next();
 		$Item_5				= $cursor->current();
-		 
 		$cursor2			= $colCollection->find()->skip($intSkip);
-		$this->assertEquals("Mongo_Document_Cursor", get_class($cursor2));
+		$this->assertEquals("Mongo_Cursor", get_class($cursor2));
 		$Item				= $cursor2->getNext();
 		
-		$this->assertEquals($Item_5->getId(),	$Item->getId());
+		$this->assertEquals($Item_5['_id'],	$Item['_id']);
 	}
 	//testSort
 	public function testSUCCEED_sort()									{
@@ -85,6 +84,6 @@ class Mongo_Document_CursorTest extends PHPUnit_Framework_TestCase	{
 			$cursor->next();
 		$item10				= $cursor->getNext();
 		
-		$this->assertEquals($item1->getId(),	$item10->getId());
+		$this->assertEquals($item1['_id'],	$item10['_id']);
 	}
 }

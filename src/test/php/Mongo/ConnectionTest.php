@@ -12,18 +12,6 @@ defined('MONGO_TEST_PATH') or define('MONGO_TEST_PATH', "");
 class Mongo_ConnectionTest extends PHPUnit_Framework_TestCase	{
 	const	TEST_DATABASE	= "testMongo";
 	
-	//test CONSTRUCT
-		//@todo - have to test with different "options" parameter
-		//NOTE: These tests are all a little "spurious" because they are confusing __connect with other stuff
-	public function testFAIL_invalidHost()						{
-		try 													{
-			$mongoConn	= new Mongo_Connection("FAIL");
-			$mongoConn->connect("FAIL");
-			$this->fail("Exception expected");
-		} catch(MongoConnectionException $e)					{
-			$this->assertEquals("connecting to FAIL failed: couldn't get host info for FAIL", $e->getMessage());
-		}
-	}	
 	public function testSUCCEED_string()						{
 		$config			 	= new Zend_Config_Ini(MONGO_TEST_PATH.'mongo.ini', APPLICATION_ENV);
 		$strConnString		= $config->mongo->hosts->host1->host.":".$config->mongo->hosts->host1->port;
@@ -46,18 +34,6 @@ class Mongo_ConnectionTest extends PHPUnit_Framework_TestCase	{
 		$mongoConn			= new Mongo_Connection($config->mongo);
 		$arrDatabases		= $mongoConn->getDatabases();
 		$this->assertTrue(2 <= count($arrDatabases));
-	}
-	//test __get
-	public function testFAIL_get_notImplemented()				{
-		$strCollectionName	= "Accounts";
-		$config			 	= new Zend_Config_Ini(MONGO_TEST_PATH.'mongo.ini', APPLICATION_ENV);
-		$mongoConn			= new Mongo_Connection($config->mongo);
-		try 													{
-			$mongoConn->$strCollectionName;
-			$this->fail("Exception expected");
-		} catch(Mongo_Exception $e)								{
-			$this->assertEquals(Mongo_Exception::ERROR_NOT_IMPLEMENTED, $e->getMessage());
-		}
 	}
 	//test connect 
 	public function testSUCCEED_connect()						{
@@ -93,7 +69,7 @@ class Mongo_ConnectionTest extends PHPUnit_Framework_TestCase	{
 		//Here we check that it actually worked
 		$dbColn				= $mongoConn->getCollection(self::TEST_DATABASE, "Accounts");
 		$dbAccount			= $dbColn->findOne();
-		$this->assertEquals("lcfcomputers", $dbAccount->AccountURL);
+		$this->assertEquals("lcfcomputers", $dbAccount['AccountURL']);
 	}
 	//test getCollection
 	//test getrawCollection
