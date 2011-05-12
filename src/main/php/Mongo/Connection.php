@@ -87,16 +87,27 @@ class Mongo_Connection
 		return true;
 	}
 	/**
-	 * Allows the User to run commands on the database
+	 * Runs the distinct command
 	 *
-	 * @param   string  $strDatabase 
-	 * @param   Array   $arrCommand 
-	 * @return  Array
-	 * @author  Tim Langley
+	 * @param string $strDatabaseName 
+	 * @param string $strCollection 
+	 * @param string $strKey 
+	 * @param Array $arrQuery 
+	 * @return void
+	 * @author Tim Langley
 	**/
-	public function command($strDatabase, Array $arrCommand)
+	public function distinct($strDatabaseName, $strCollection, $strKey, Array $arrQuery = array())
 	{
-	    return $this->raw_mongoDB($strDatabaseName)->command($arrCommand);
+	    $arrCommand = array( 'distinct' => $strCollection
+	                        ,'key'      => $strKey);
+	    if(!empty($arrQuery))
+	        $arrCommand['query']        = $arrQuery;
+	    $arrReturn  = $this->raw_mongoDB($strDatabaseName)->command($arrCommand);
+	    if(!isset($arrReturn['values'])) {
+	        $strErrorMessage = isset($arrReturn['errmsg'])?$arrReturn['errmsg']:Mongo_Exception::ERROR_UNKNOWN;
+	        throw new Mongo_Exception($strErrorMessage);
+	    }
+	    return $arrReturn['values'];
 	}
 	/**
 	 *	@purpose: 	This drops the database 
