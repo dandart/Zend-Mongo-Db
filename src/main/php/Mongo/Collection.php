@@ -176,7 +176,7 @@ class Mongo_Collection implements Countable
 		$this->raw_mongoCollection()->update($arrCriteria, $arrNewObject, $options);
 		return true;
 	}
-	public function removeArray(Array $arrCriteria)
+	public function removeArray(Array $arrCriteria, $bSafe = true)
 	{
 	    $options["safe"]		= $bSafe;
 	    return $this->raw_mongoCollection()->remove($arrCriteria, $options);
