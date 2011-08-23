@@ -109,6 +109,53 @@ class Mongo_Connection
 	    }
 	    return $arrReturn['values'];
 	}
+	
+	const MR_MapReduce = 'mapreduce';
+	const MR_Map = 'map';
+	const MR_Reduce = 'reduce';
+	const MR_Finalize = 'finalize';
+	const MR_Out = 'out';
+	const MR_Query = 'query';
+	const MR_Sort = 'sort';
+	const MR_Limit = 'limit';
+	const MR_Inline = 'inline';
+	const MR_Verbose = 'verbose';
+	const MR_Results = 'results';
+	const MR_Value = 'value';
+	
+	/**
+     * Run a MapReduce query
+     *
+     * @param string $strDatabase - database name
+     * @param string $strCollection - collection name
+     * @param MongoCode $map - JS code for map function
+     * @param MongoCode $reduce - JS code for reduce function
+     * @param MongoCode $finalize - JS code for finalize function
+     * @param string | array $out - either the collection to save results in or array with details (see reference)
+     * @param Array | null $arrQuery - standard query array
+     * @param string | null $sort - input field to sort upon
+     * @param int | null $limit - limit the results
+     * @return Array - output
+     * @see http://www.mongodb.org/display/DOCS/MapReduce
+     * @author Dan Dart
+     */
+	public function mapReduce($strDatabase, $strCollection, MongoCode $map, MongoCode $reduce, MongoCode $finalize, $out, Array $arrQuery = array(), $sort = null, $limit = null)
+	{
+	    $arrCommand = array(
+	       self::MR_MapReduce => $strCollection,
+	       self::MR_Map => $map,
+	       self::MR_Reduce => $reduce,
+	       self::MR_Finalize => $finalize,
+	       self::MR_Out => $out,
+	       self::MR_Query => $arrQuery,
+	       self::MR_Sort => $sort,
+	       self::MR_Limit => $limit,
+	       self::MR_Verbose => false
+	    );
+	    
+	    return $this->raw_mongoDB($strDatabase)->command($arrCommand);
+	}
+	
 	/**
 	 *	@purpose: 	This drops the database 
 	 *				(if it's already connected to a different DB then this is cached and returned to later)

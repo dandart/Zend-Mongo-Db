@@ -3,7 +3,7 @@
 <plist version="1.0">
 <dict>
 	<key>currentDocument</key>
-	<string>src/main/php/Mongo/Document/Abstract.php</string>
+	<string>registerautoload.php</string>
 	<key>documents</key>
 	<array>
 		<dict>
@@ -29,6 +29,20 @@
 				<integer>20</integer>
 				<key>line</key>
 				<integer>6</integer>
+			</dict>
+			<key>firstVisibleColumn</key>
+			<integer>0</integer>
+			<key>firstVisibleLine</key>
+			<integer>0</integer>
+		</dict>
+		<key>registerautoload.php</key>
+		<dict>
+			<key>caret</key>
+			<dict>
+				<key>column</key>
+				<integer>2</integer>
+				<key>line</key>
+				<integer>25</integer>
 			</dict>
 			<key>firstVisibleColumn</key>
 			<integer>0</integer>
@@ -62,62 +76,6 @@
 			<integer>0</integer>
 			<key>firstVisibleLine</key>
 			<integer>56</integer>
-		</dict>
-		<key>src/main/php/Mongo/Document.php</key>
-		<dict>
-			<key>caret</key>
-			<dict>
-				<key>column</key>
-				<integer>38</integer>
-				<key>line</key>
-				<integer>91</integer>
-			</dict>
-			<key>firstVisibleColumn</key>
-			<integer>0</integer>
-			<key>firstVisibleLine</key>
-			<integer>0</integer>
-		</dict>
-		<key>src/main/php/Mongo/Document/Abstract.php</key>
-		<dict>
-			<key>caret</key>
-			<dict>
-				<key>column</key>
-				<integer>7</integer>
-				<key>line</key>
-				<integer>95</integer>
-			</dict>
-			<key>firstVisibleColumn</key>
-			<integer>0</integer>
-			<key>firstVisibleLine</key>
-			<integer>83</integer>
-		</dict>
-		<key>src/main/php/Mongo/Document/Cursor.php</key>
-		<dict>
-			<key>caret</key>
-			<dict>
-				<key>column</key>
-				<integer>2</integer>
-				<key>line</key>
-				<integer>27</integer>
-			</dict>
-			<key>firstVisibleColumn</key>
-			<integer>0</integer>
-			<key>firstVisibleLine</key>
-			<integer>2</integer>
-		</dict>
-		<key>src/main/php/Mongo/DocumentArray.php</key>
-		<dict>
-			<key>caret</key>
-			<dict>
-				<key>column</key>
-				<integer>0</integer>
-				<key>line</key>
-				<integer>0</integer>
-			</dict>
-			<key>firstVisibleColumn</key>
-			<integer>0</integer>
-			<key>firstVisibleLine</key>
-			<integer>10</integer>
 		</dict>
 		<key>src/main/php/application.ini</key>
 		<dict>
@@ -184,14 +142,12 @@
 		<string>src/test/php/Mongo/CollectionTest.php</string>
 		<string>src/test/php/Mongo/ConnectionTest.php</string>
 		<string>src/test/php/Mongo/mongo.ini</string>
-		<string>src/main/php/Mongo/Document/Cursor.php</string>
 		<string>pom.xml</string>
-		<string>src/main/php/Mongo/Document.php</string>
-		<string>src/main/php/Mongo/Document/Abstract.php</string>
+		<string>registerautoload.php</string>
 	</array>
 	<key>showFileHierarchyDrawer</key>
 	<true/>
 	<key>windowFrame</key>
-	<string>{{315, 90}, {1058, 687}}</string>
+	<string>{{315, 91}, {1058, 687}}</string>
 </dict>
 </plist>

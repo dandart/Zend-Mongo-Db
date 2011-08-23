@@ -23,5 +23,5 @@ $autoloader->registerNamespace('PHPUnit_');
 $autoloader->registerNamespace('Zend_');
 $autoloader->registerNamespace('Mongo_');
 
-PHPUnit_Util_Filter::addDirectoryToWhitelist(MONGO_PATH);
+//PHPUnit_Util_Filter::addDirectoryToWhitelist(MONGO_PATH);
 
