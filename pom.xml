@@ -13,7 +13,7 @@
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<phpmaven.version>1.1-SNAPSHOT</phpmaven.version>
 		<phpunit.version>3.3.9</phpunit.version>
-		<zend.version>1.11-SNAPSHOT</zend.version>
+		<zend.version>1.11.11</zend.version>
  	</properties>
 	
 	<developers>
@@ -99,76 +99,31 @@
 					</descriptors>
 				</configuration>
 			</plugin>
-			<!-- Code Coverage -->
-			<plugin>
-		    	<groupId>org.codehaus.mojo</groupId>
-			    <artifactId>exec-maven-plugin</artifactId>
-			    <version>1.1.1</version>
-			    <executions>
-			        <execution>
-			            <id>reports-dir</id>
-			            <phase>verify</phase>
-			            <goals>
-			                <goal>exec</goal>
-			            </goals>
-			            <configuration>
-			                <executable>mkdir</executable>
-			                <arguments>
-			                    <argument>-p</argument>
-			                    <argument>${project.build.directory}/reports/coverage</argument>
-			                </arguments>
-			            </configuration>
-			        </execution>
-		<!-- FOR NOW CODE SNIFFER HAS BEEN DISABLED
-			   		<execution>
-			            <id>codesniffer</id>
-			            <phase>verify</phase>
-			            <goals>
-			                <goal>exec</goal>
-			            </goals>
-			            <configuration>
-			                <executable>phpcs</executable>
-			                <arguments>
-			                    <argument>- -standard=Zend</argument>
-			                    <argument>- -report=checkstyle</argument>
-			                    <argument>- -extensions=php</argument>
-			                    <argument>- -report-file=${project.build.directory}/checkstyle-result.xml</argument>
-			                    <argument>src/main/</argument>
-			                </arguments>
-			                <successCodes>
-			                    <successCode>0</successCode>
-			                    <successCode>1</successCode>
-			                </successCodes>
-			            </configuration>
-			        </execution>
-		-->
-		        	<execution>
-			            <id>phpunit</id>
-			            <phase>verify</phase>
-			            <goals>
-			                <goal>exec</goal>
-			            </goals>
-			            <configuration>
-			                <executable>phpunit</executable>
-			                <arguments>
-			                    <argument>--coverage-clover</argument>
-			                    <argument>${project.build.directory}/reports/clover.xml</argument>
-
-			                    <argument>--coverage-html</argument>
-			                    <argument>${project.build.directory}/reports/coverage/</argument>
-
-			                    <argument>-dmemory_limit=100M</argument>
-
-			                    <!-- Properly set include path and autoloader to allow everything to work -->
-			                    <argument>--bootstrap</argument>
-			                    <argument>registerautoload.php</argument>
-
-			                    <argument>src/test/php/</argument>
-			                </arguments>
-			            </configuration>
-			        </execution>
-			    </executions>
-			</plugin>
+			<!-- Classmap Generation -->
+      <plugin>
+        <artifactId>maven-antrun-plugin</artifactId>
+        <version>1.6</version>
+        <executions>
+          <execution>
+            <id>Zend_Mongo classmap</id>
+            <phase>test</phase>
+            <configuration>
+              <target>
+                <property name="path.inputRaw" value="${project.basedir}/src/main/php" />
+                <property name="path.classMapGen" value="${project.basedir}/src/site/resources/classmap_generator.php" />
+                <property name="path.outputRaw" value="${project.build.directory}/classes" />
+                <ant antfile="${project.basedir}/src/main/php/build.xml">
+                  <target name="compile"/>
+                </ant>
+              </target>
+            </configuration>
+            <goals>
+              <goal>run</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+      
 		</plugins>
 	</build>
 	

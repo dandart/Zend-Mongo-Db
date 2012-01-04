@@ -1,0 +1,20 @@
+<project name="Mongo" default="compile">
+  <description>
+    Create Mongo classmap.
+  </description>
+  
+  <target name="setPaths">
+    <property name="path.inputRaw" value="." />
+    <property name="path.classMapGen" value="../../site/resources/classmap_generator.php" />
+    <property name="path.outputRaw" value="." />
+  </target>
+  
+  <target name="compile" depends="setPaths">
+    <echo level="info" message="Creating project classmaps." />
+    <touch file="${path.outputRaw}/Mongo/.classmap.php"/>
+    <exec executable="php">
+      <arg line="${path.classMapGen} -w -l '${path.inputRaw}/Mongo' -o '${path.outputRaw}/Mongo/.classmap.php'" />
+    </exec>
+  </target>
+
+</project>
