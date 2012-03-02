@@ -5,6 +5,7 @@
  * @copyright  2010, Campaign and Digital Intelligence Ltd
  * @license    New BSD License
  * @author     Tim Langley
+ * @author     Dan Dart
  * @todo:		Should make this more Zend friendly (ie taking a config object)
  * @todo:		Should support multiple connections (and slave only - read only connections)
 **/
@@ -22,6 +23,24 @@ class Mongo_Connection
 	const 	STR_DATABASE							= "database";
 		
 	const   MONGO_FIELD_ID                          = '_id';
+	
+	const MR_MapReduce = 'mapreduce';
+	const MR_Map = 'map';
+	const MR_Reduce = 'reduce';
+	const MR_Finalize = 'finalize';
+	const MR_Out = 'out';
+	const MR_Query = 'query';
+	const MR_Sort = 'sort';
+	const MR_Limit = 'limit';
+	const MR_Inline = 'inline';
+	const MR_Verbose = 'verbose';
+	const MR_Results = 'results';
+	const MR_Value = 'value';
+	
+	const EXEC_RETVAL = 'retval';
+	const EXEC_OK = 'ok';
+	const EXEC_ERRNO = 'errno';
+	const EXEC_ERRMSG = 'errmsg';
 	
 	private static $_defaultConnectionString		= null;
 	private static $_defaultDatabaseName			= null;
@@ -110,19 +129,6 @@ class Mongo_Connection
 	    return $arrReturn['values'];
 	}
 	
-	const MR_MapReduce = 'mapreduce';
-	const MR_Map = 'map';
-	const MR_Reduce = 'reduce';
-	const MR_Finalize = 'finalize';
-	const MR_Out = 'out';
-	const MR_Query = 'query';
-	const MR_Sort = 'sort';
-	const MR_Limit = 'limit';
-	const MR_Inline = 'inline';
-	const MR_Verbose = 'verbose';
-	const MR_Results = 'results';
-	const MR_Value = 'value';
-	
 	/**
      * Run a MapReduce query
      *
@@ -171,6 +177,38 @@ class Mongo_Connection
 			unset($this->_arrRawMongoDB[$strDatabaseName]);
 		return true;
 	}
+	
+	/**
+	 * Executes a MongoCode and returns the result
+	 *
+	 * @param string $strDatabaseName 
+	 * @param MongoCode $mongoCode 
+	 * @return mixed
+	 * @throws Mongo_Exception
+	 * @author Dan Dart
+	**/
+	public function execute($strDatabaseName, MongoCode $mongoCode)
+	{
+	    $arrOut = $this->raw_mongoDB($strDatabaseName)->execute($mongoCode);
+	    // Malformed response?
+	    if(!isset($arrOut[self::EXEC_OK]) || (1 != $arrOut[self::EXEC_OK] && 0 != $arrOut[self::EXEC_OK])) {
+	        throw new Mongo_Exception(sprintf(Mongo_Collection::ERROR_MALFORMED_RESPONSE_PARAM, self::EXEC_OK));
+	    }
+	    
+        if(1 != $arrOut[self::EXEC_OK]) {
+            if(!isset($arrOut[self::EXEC_ERRNO]) || !isset($arrOut[self::EXEC_ERRMSG])) {
+                throw new Mongo_Exception(sprintf(Mongo_Collection::ERROR_MALFORMED_RESPONSE_PARAM, self::EXEC_ERRNO . ', '. self::EXEC_ERRMSG));
+            }
+            throw new Mongo_Exception(sprintf(Mongo_Exception::ERROR_EXECUTE, $arrOut[self::EXEC_ERRNO], $arrOut[self::EXEC_ERRMSG]));
+        }
+        
+        if(!isset($arrOut[self::EXEC_RETVAL])) {
+            throw new Mongo_Exception(sprintf(Mongo_Collection::ERROR_MALFORMED_RESPONSE_PARAM, self::EXEC_RETVAL));
+        }
+        
+        return $arrOut[self::EXEC_RETVAL];
+	}
+	
 	/**
 	 *	@purpose: 	This opens a file from the file system and runs it within the MongoDb
 	 *				This is mainly used for unit testing where the file will contain details how to set-up the test

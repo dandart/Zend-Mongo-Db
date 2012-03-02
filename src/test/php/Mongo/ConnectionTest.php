@@ -49,6 +49,33 @@ class Mongo_ConnectionTest extends PHPUnit_Framework_TestCase	{
 		$return 			= $mongoConn->dropDatabase(self::TEST_DATABASE);
 		$this->assertTrue($return);
 	}
+	public function testSUCCEED_execute_returnString()
+	{
+	    $config			 	= new Zend_Config_Ini(MONGO_TEST_PATH.'mongo.ini', APPLICATION_ENV);
+		$mongoConn			= new Mongo_Connection($config->mongo);
+		$strExpectedOut     = 'Hello';
+		$mongoCode          = new MongoCode('return "'.$strExpectedOut.'";');
+		$return 			= $mongoConn->execute(self::TEST_DATABASE, $mongoCode);
+		$this->assertEquals($strExpectedOut, $return);
+	}
+
+	public function testSUCCEED_execute_returnObject()
+	{
+	    $config			 	= new Zend_Config_Ini(MONGO_TEST_PATH.'mongo.ini', APPLICATION_ENV);
+		$mongoConn			= new Mongo_Connection($config->mongo);
+		$arrExpectedOut     = array('Hello' => 'There');
+		$mongoCode          = new MongoCode('return '.Zend_Json::encode($arrExpectedOut).';');
+		$return 			= $mongoConn->execute(self::TEST_DATABASE, $mongoCode);
+		$this->assertEquals($arrExpectedOut, $return);
+	}
+	public function testFAIL_execute()
+	{
+	    $this->setExpectedException('Mongo_Exception');
+	    $config			 	= new Zend_Config_Ini(MONGO_TEST_PATH.'mongo.ini', APPLICATION_ENV);
+		$mongoConn			= new Mongo_Connection($config->mongo);
+		$mongoCode          = new MongoCode('this_function_doesnt_exist();');
+		$return 			= $mongoConn->execute(self::TEST_DATABASE, $mongoCode);
+	}
 	//test ExecuteFile
 	public function testFAIL_executeFile_NotFound()				{
 		$config			 	= new Zend_Config_Ini(MONGO_TEST_PATH.'mongo.ini', APPLICATION_ENV);
