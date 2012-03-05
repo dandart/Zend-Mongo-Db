@@ -192,18 +192,18 @@ class Mongo_Connection
 	    $arrOut = $this->raw_mongoDB($strDatabaseName)->execute($mongoCode);
 	    // Malformed response?
 	    if(!isset($arrOut[self::EXEC_OK]) || (1 != $arrOut[self::EXEC_OK] && 0 != $arrOut[self::EXEC_OK])) {
-	        throw new Mongo_Exception(sprintf(Mongo_Collection::ERROR_MALFORMED_RESPONSE_PARAM, self::EXEC_OK));
+	        throw new Mongo_Exception(sprintf(Mongo_Exception::ERROR_MALFORMED_RESPONSE_PARAM, self::EXEC_OK));
 	    }
 	    
         if(1 != $arrOut[self::EXEC_OK]) {
             if(!isset($arrOut[self::EXEC_ERRNO]) || !isset($arrOut[self::EXEC_ERRMSG])) {
-                throw new Mongo_Exception(sprintf(Mongo_Collection::ERROR_MALFORMED_RESPONSE_PARAM, self::EXEC_ERRNO . ', '. self::EXEC_ERRMSG));
+                throw new Mongo_Exception(sprintf(Mongo_Exception::ERROR_MALFORMED_RESPONSE_PARAM, self::EXEC_ERRNO . ', '. self::EXEC_ERRMSG));
             }
             throw new Mongo_Exception(sprintf(Mongo_Exception::ERROR_EXECUTE, $arrOut[self::EXEC_ERRNO], $arrOut[self::EXEC_ERRMSG]));
         }
         
         if(!isset($arrOut[self::EXEC_RETVAL])) {
-            throw new Mongo_Exception(sprintf(Mongo_Collection::ERROR_MALFORMED_RESPONSE_PARAM, self::EXEC_RETVAL));
+            throw new Mongo_Exception(sprintf(Mongo_Exception::ERROR_MALFORMED_RESPONSE_PARAM, self::EXEC_RETVAL));
         }
         
         return $arrOut[self::EXEC_RETVAL];
