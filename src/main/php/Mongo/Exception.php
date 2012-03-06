@@ -20,5 +20,5 @@ class Mongo_Exception extends Exception
 	const ERROR_MALFORMED_RESPONSE_PARAM    = "Malformed response, parameter missing: (%s)";
 	const ERROR_NOT_NULL					= "Value can't be empty";
 	const ERROR_UNKNOWN						= "An unknown error has occurred";
-	const ERROR_EXECUTE                     = "An error has occurred during execute(). Errno: (%s), Message: (%s)";
+	const ERROR_EXECUTE                     = "An error has occurred during execute(). Message: (%s)";
 }

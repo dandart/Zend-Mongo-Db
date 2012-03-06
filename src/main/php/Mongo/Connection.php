@@ -196,10 +196,10 @@ class Mongo_Connection
 	    }
 	    
         if(1 != $arrOut[self::EXEC_OK]) {
-            if(!isset($arrOut[self::EXEC_ERRNO]) || !isset($arrOut[self::EXEC_ERRMSG])) {
-                throw new Mongo_Exception(sprintf(Mongo_Exception::ERROR_MALFORMED_RESPONSE_PARAM, self::EXEC_ERRNO . ', '. self::EXEC_ERRMSG));
+            if(!isset($arrOut[self::EXEC_ERRMSG])) {
+                throw new Mongo_Exception(sprintf(Mongo_Exception::ERROR_MALFORMED_RESPONSE_PARAM, self::EXEC_ERRMSG));
             }
-            throw new Mongo_Exception(sprintf(Mongo_Exception::ERROR_EXECUTE, $arrOut[self::EXEC_ERRNO], $arrOut[self::EXEC_ERRMSG]));
+            throw new Mongo_Exception(sprintf(Mongo_Exception::ERROR_EXECUTE, $arrOut[self::EXEC_ERRMSG]));
         }
         
         if(!isset($arrOut[self::EXEC_RETVAL])) {
