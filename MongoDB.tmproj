@@ -3,7 +3,7 @@
 <plist version="1.0">
 <dict>
 	<key>currentDocument</key>
-	<string>environments.php</string>
+	<string>src/main/php/Mongo/Exception.php</string>
 	<key>documents</key>
 	<array>
 		<dict>
@@ -86,14 +86,28 @@
 			<key>caret</key>
 			<dict>
 				<key>column</key>
-				<integer>31</integer>
+				<integer>99</integer>
 				<key>line</key>
-				<integer>56</integer>
+				<integer>199</integer>
 			</dict>
 			<key>firstVisibleColumn</key>
 			<integer>0</integer>
 			<key>firstVisibleLine</key>
-			<integer>41</integer>
+			<integer>181</integer>
+		</dict>
+		<key>src/main/php/Mongo/Exception.php</key>
+		<dict>
+			<key>caret</key>
+			<dict>
+				<key>column</key>
+				<integer>84</integer>
+				<key>line</key>
+				<integer>22</integer>
+			</dict>
+			<key>firstVisibleColumn</key>
+			<integer>0</integer>
+			<key>firstVisibleLine</key>
+			<integer>0</integer>
 		</dict>
 		<key>target/classes/Mongo/Connection.php</key>
 		<dict>
@@ -114,12 +128,13 @@
 	<array>
 		<string>target/classes/Mongo/Connection.php</string>
 		<string>src/main/php/Mongo/Connection.php</string>
+		<string>src/main/php/Mongo/Exception.php</string>
 		<string>pom.xml</string>
 		<string>environments.php</string>
 	</array>
 	<key>showFileHierarchyDrawer</key>
 	<true/>
 	<key>windowFrame</key>
-	<string>{{345, 471}, {1058, 687}}</string>
+	<string>{{345, 337}, {1413, 821}}</string>
 </dict>
 </plist>

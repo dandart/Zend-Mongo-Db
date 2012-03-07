@@ -2,9 +2,10 @@
 /**
  * @category   MongoDB
  * @package    Mongo
- * @copyright  2010, Campaign and Digital Intelligence Ltd
+ * @copyright  2010-2012, Campaign and Digital Intelligence Ltd
  * @license    New BSD License
  * @author     Tim Langley
+ * @author     Dan Dart
 **/
 
 
@@ -43,21 +44,23 @@ class Mongo_Collection implements Countable
 		return $this->raw_mongoCollection()->drop();
 	}
 	/**
-	 *	@purpose:	
+	 *	@purpose:	returns a cursor of data from querying the collection -
+	 *      allow a read-only slave to do this
 	 * 	@param:		$query 	Array array(field => Value)
 	 *	@param:		$fields	Array array(A,B,C) - the fields to return
-	 *	@param:		$sort	Array array(A => 1, B => -1 ) where A,B are the fields to sort on & 1 = ASC, -1 = DESC
-	 *	@return:	returns Mongo_Document_Cursor
+	 *	@return:	returns Mongo_Cursor
     **/
 	public  function find($query = array(), $fields = array())
 	{
-		if(is_null($query) || is_null($fields))
+		if(is_null($query) || is_null($fields)) {
 			throw new Mongo_Exception(Mongo_Exception::ERROR_MISSING_VALUES);
-		$cursor				= $this->raw_mongoCollection()->find($query, $fields);
+		}
+		$cursor				= $this->raw_mongoCollection()->find($query, $fields)->slaveOkay();
 		return new Mongo_Cursor($cursor, $this->getDatabaseName());
 	}
 	/**
-	 *	@purpose:	
+	 *	@purpose:	Find one document from a collection -
+	 *      allow a read-only slave to do this
 	 * 	@param:		$query 	Array array(field => Value)
 	 *	@param:		$fields	Array array(A,B,C) - the fields to return
 	 *	@return:	array
@@ -65,10 +68,13 @@ class Mongo_Collection implements Countable
     **/
 	public  function findOne($query = array(), $fields = array())
 	{
-		
-		if(is_null($query) || is_null($fields))
+		if(is_null($query) || is_null($fields)) {
 			throw new Mongo_Exception(Mongo_Exception::ERROR_MISSING_VALUES);
-		return $this->raw_mongoCollection()->findOne($query, $fields);
+		}
+		$this->raw_mongoCollection()->setSlaveOkay(true);
+        $arrReturn = $this->raw_mongoCollection()->findOne($query, $fields);
+        $this->raw_mongoCollection()->setSlaveOkay(false);
+        return $arrReturn;
 	}
 	/**
 	 *	@purpose:	Returns the name of the collection

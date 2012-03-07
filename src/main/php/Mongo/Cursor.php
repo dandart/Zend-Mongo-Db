@@ -2,9 +2,10 @@
 /**
  * @category   MongoDB
  * @package    Mongo
- * @copyright  2010, Campaign and Digital Intelligence Ltd
+ * @copyright  2010-2012, Campaign and Digital Intelligence Ltd
  * @license    New BSD License
  * @author     Tim Langley
+ * @author     Dan Dart
 **/
 
 class Mongo_Cursor implements OuterIterator, Countable

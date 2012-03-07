@@ -2,7 +2,7 @@
 /**
  * @category   MongoDB
  * @package    Mongo
- * @copyright  2010, Campaign and Digital Intelligence Ltd
+ * @copyright  2010-2012, Campaign and Digital Intelligence Ltd
  * @license    New BSD License
  * @author     Tim Langley
  * @author     Dan Dart
@@ -44,6 +44,7 @@ class Mongo_Connection
 	
 	private static $_defaultConnectionString		= null;
 	private static $_defaultDatabaseName			= null;
+	private static $_arrDefaultOptions              = array();
 	
 	/**
 	 *	@purpose:	This private function manages the _raw_mongo parameter ensuring it's connected
@@ -88,6 +89,12 @@ class Mongo_Connection
 		$arrConnection		 	= $this->createConnectionArray($connection);
 		$connectionString		= $arrConnection[self::STR_CONNECTION];
 		$databaseName			= $arrConnection[self::STR_DATABASE];
+	
+	    $options = self::_createOptionsArray($options);
+
+	    if (empty($options)) {
+	        $options = self::$_arrDefaultOptions;
+	    }
 	
 		//NOTE: This overrides to make sure that it only connects when required
 		$this->b_IsConnected	= false;
@@ -365,5 +372,37 @@ class Mongo_Connection
 	public 	static function getDefaultConnectionString()
 	{
 		return Mongo_Connection::$_defaultConnectionString;
+	}
+	
+	/**
+	 * Normalise/validate options array
+	 *
+	 * @param Zend_Config_Ini | Array $options 
+	 * @return array
+	 * @author Dan Dart
+	**/
+	private static function _createOptionsArray($options)
+	{
+	    if (is_a($options, 'Zend_Config_Ini')) {
+            $options = $options->toArray();
+        }
+	
+	    if (!is_array($options)) {
+	        throw new Mongo_Exception(Mongo_Exception::ERROR_OPTIONS_NOT_ARRAY);
+	    }
+	    
+	    return $options;
+	}
+	
+	/**
+	 * Sets the default options
+	 *
+	 * @param Zend_Config_Ini | Array $options 
+	 * @return void
+	 * @author Dan Dart
+	**/
+	public static function setDefaultOptions($options)
+	{
+	    self::$_arrDefaultOptions = self::_createOptionsArray($options);
 	}
 }
