@@ -190,12 +190,12 @@ class Mongo_Connection
 	 *
 	 * @param string $strDatabaseName 
 	 * @param MongoCode $mongoCode 
-	 * @param bool $bIsSlaveOkay
+	 * @param bool $bIsSlaveOkay = true
 	 * @return mixed
 	 * @throws Mongo_Exception
 	 * @author Dan Dart
 	**/
-	public function execute($strDatabaseName, MongoCode $mongoCode, $bIsSlaveOkay)
+	public function execute($strDatabaseName, MongoCode $mongoCode, $bIsSlaveOkay = true)
 	{
 	    $db = $this->raw_mongoDB($strDatabaseName);
 	    if($bIsSlaveOkay) {
