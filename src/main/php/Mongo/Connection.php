@@ -190,13 +190,21 @@ class Mongo_Connection
 	 *
 	 * @param string $strDatabaseName 
 	 * @param MongoCode $mongoCode 
+	 * @param bool $bIsSlaveOkay
 	 * @return mixed
 	 * @throws Mongo_Exception
 	 * @author Dan Dart
 	**/
-	public function execute($strDatabaseName, MongoCode $mongoCode)
+	public function execute($strDatabaseName, MongoCode $mongoCode, $bIsSlaveOkay)
 	{
-	    $arrOut = $this->raw_mongoDB($strDatabaseName)->execute($mongoCode);
+	    $db = $this->raw_mongoDB($strDatabaseName);
+	    if($bIsSlaveOkay) {
+	        $db->setSlaveOkay(true);
+	    }
+	    $arrOut = $db->execute($mongoCode);
+	    if($bIsSlaveOkay) {
+	        $db->setSlaveOkay(false);
+	    }
 	    // Malformed response?
 	    if(!isset($arrOut[self::EXEC_OK]) || (1 != $arrOut[self::EXEC_OK] && 0 != $arrOut[self::EXEC_OK])) {
 	        throw new Mongo_Exception(sprintf(Mongo_Exception::ERROR_MALFORMED_RESPONSE_PARAM, self::EXEC_OK));

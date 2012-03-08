@@ -3,7 +3,7 @@
 <plist version="1.0">
 <dict>
 	<key>currentDocument</key>
-	<string>src/main/php/Mongo/Exception.php</string>
+	<string>src/main/php/Mongo/Collection.php</string>
 	<key>documents</key>
 	<array>
 		<dict>
@@ -81,33 +81,91 @@
 				<integer>139</integer>
 			</dict>
 		</dict>
+		<key>src/main/php/Mongo/Collection.php</key>
+		<dict>
+			<key>caret</key>
+			<dict>
+				<key>column</key>
+				<integer>40</integer>
+				<key>line</key>
+				<integer>84</integer>
+			</dict>
+			<key>firstVisibleColumn</key>
+			<integer>0</integer>
+			<key>firstVisibleLine</key>
+			<integer>59</integer>
+		</dict>
 		<key>src/main/php/Mongo/Connection.php</key>
 		<dict>
 			<key>caret</key>
 			<dict>
 				<key>column</key>
-				<integer>99</integer>
+				<integer>3</integer>
 				<key>line</key>
-				<integer>199</integer>
+				<integer>398</integer>
 			</dict>
 			<key>firstVisibleColumn</key>
 			<integer>0</integer>
 			<key>firstVisibleLine</key>
-			<integer>181</integer>
+			<integer>365</integer>
+		</dict>
+		<key>src/main/php/Mongo/Cursor.php</key>
+		<dict>
+			<key>caret</key>
+			<dict>
+				<key>column</key>
+				<integer>24</integer>
+				<key>line</key>
+				<integer>4</integer>
+			</dict>
+			<key>firstVisibleColumn</key>
+			<integer>0</integer>
+			<key>firstVisibleLine</key>
+			<integer>3</integer>
 		</dict>
 		<key>src/main/php/Mongo/Exception.php</key>
 		<dict>
 			<key>caret</key>
 			<dict>
 				<key>column</key>
-				<integer>84</integer>
+				<integer>24</integer>
 				<key>line</key>
-				<integer>22</integer>
+				<integer>4</integer>
 			</dict>
 			<key>firstVisibleColumn</key>
 			<integer>0</integer>
 			<key>firstVisibleLine</key>
 			<integer>0</integer>
+		</dict>
+		<key>src/test/php/Mongo/CollectionTest.php</key>
+		<dict>
+			<key>caret</key>
+			<dict>
+				<key>column</key>
+				<integer>53</integer>
+				<key>line</key>
+				<integer>16</integer>
+			</dict>
+			<key>columnSelection</key>
+			<false/>
+			<key>firstVisibleColumn</key>
+			<integer>0</integer>
+			<key>firstVisibleLine</key>
+			<integer>0</integer>
+			<key>selectFrom</key>
+			<dict>
+				<key>column</key>
+				<integer>35</integer>
+				<key>line</key>
+				<integer>16</integer>
+			</dict>
+			<key>selectTo</key>
+			<dict>
+				<key>column</key>
+				<integer>61</integer>
+				<key>line</key>
+				<integer>16</integer>
+			</dict>
 		</dict>
 		<key>target/classes/Mongo/Connection.php</key>
 		<dict>
@@ -128,6 +186,9 @@
 	<array>
 		<string>target/classes/Mongo/Connection.php</string>
 		<string>src/main/php/Mongo/Connection.php</string>
+		<string>src/main/php/Mongo/Collection.php</string>
+		<string>src/test/php/Mongo/CollectionTest.php</string>
+		<string>src/main/php/Mongo/Cursor.php</string>
 		<string>src/main/php/Mongo/Exception.php</string>
 		<string>pom.xml</string>
 		<string>environments.php</string>
@@ -135,6 +196,6 @@
 	<key>showFileHierarchyDrawer</key>
 	<true/>
 	<key>windowFrame</key>
-	<string>{{345, 337}, {1413, 821}}</string>
+	<string>{{335, 283}, {1413, 821}}</string>
 </dict>
 </plist>
