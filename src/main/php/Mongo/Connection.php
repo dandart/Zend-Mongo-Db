@@ -95,6 +95,7 @@ class Mongo_Connection
 	    if (empty($options)) {
 	        $options = self::$_arrDefaultOptions;
 	    }
+	    
 	
 		//NOTE: This overrides to make sure that it only connects when required
 		$this->b_IsConnected	= false;
@@ -391,7 +392,7 @@ class Mongo_Connection
 	**/
 	private static function _createOptionsArray($options)
 	{
-	    if (is_a($options, 'Zend_Config_Ini')) {
+	    if (is_a($options, 'Zend_Config')) {
             $options = $options->toArray();
         }
 	
