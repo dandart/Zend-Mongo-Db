@@ -45,6 +45,7 @@ class Mongo_Connection
 	private static $_defaultConnectionString		= null;
 	private static $_defaultDatabaseName			= null;
 	private static $_arrDefaultOptions              = array();
+	private static $_bIsSlaveOkay                   = false;
 	
 	/**
 	 *	@purpose:	This private function manages the _raw_mongo parameter ensuring it's connected
@@ -101,6 +102,7 @@ class Mongo_Connection
 		$this->b_IsConnected	= false;
 		$options['connect'] 	= false;
 		$this->_raw_mongo		= new Mongo($connectionString, $options);
+		$this->raw_mongo()->setSlaveOkay(self::isSlaveOkay());
 	}
 	/**
 	 *	@purpose: 	If connected this returns the Mongo instance
@@ -413,5 +415,28 @@ class Mongo_Connection
 	public static function setDefaultOptions($options)
 	{
 	    self::$_arrDefaultOptions = self::_createOptionsArray($options);
+	}
+	
+	/**
+	 * Sets whether slave reading is OK for the remainder of one object
+	 *
+	 * @param bool $bIsSlaveOkay 
+	 * @return void
+	 * @author Dan Dart
+	**/
+	public static function setSlaveOkay($bIsSlaveOkay)
+	{
+	    self::$_bIsSlaveOkay = $bIsSlaveOkay;
+	}
+	
+	/**
+	 * Returns whether slave reading is OK for the remainder of one object
+	 *
+	 * @return bool
+	 * @author Dan Dart
+	**/
+	public static function isSlaveOkay()
+	{
+	    return self::$_bIsSlaveOkay;
 	}
 }

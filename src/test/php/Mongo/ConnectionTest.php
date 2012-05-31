@@ -124,6 +124,13 @@ class Mongo_ConnectionTest extends PHPUnit_Framework_TestCase	{
 		//NOTE: This is still ZERO because collections are Lazy saved
 		$this->assertEquals(1, $intNoCollections);
 	}
+	public function testSUCCEED_getSetSlaveOkay()
+	{
+	    $config			 	= new Zend_Config_Ini(MONGO_TEST_PATH.'mongo.ini', APPLICATION_ENV);
+		Mongo_Connection::setSlaveOkay(true);
+		$mongoConn			= new Mongo_Connection($config->mongo);
+		$this->assertTrue(Mongo_Connection::isSlaveOkay());
+	}
 	//getDatabase
 	//getDatabases
 	//isConnected
