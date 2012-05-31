@@ -71,9 +71,7 @@ class Mongo_Collection implements Countable
 		if(is_null($query) || is_null($fields)) {
 			throw new Mongo_Exception(Mongo_Exception::ERROR_MISSING_VALUES);
 		}
-		$this->raw_mongoCollection()->setSlaveOkay(true);
         $arrReturn = $this->raw_mongoCollection()->findOne($query, $fields);
-        $this->raw_mongoCollection()->setSlaveOkay(false);
         return $arrReturn;
 	}
 	/**
