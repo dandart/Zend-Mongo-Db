@@ -51,6 +51,13 @@ class Mongo_CollectionTest extends PHPUnit_Framework_TestCase	{
 		$this->assertTrue($coln->isConnected());
 	}
 	
+	public function testSUCCEED_ensureIndex()
+	{
+	    $coln = new Mongo_Collection(self::TEST_DATABASE,"testCollection");
+	    $return = $coln->ensureIndex(array('field' => 1));
+	    $this->assertTrue($return);
+	}
+	
 	public function testSUCCEED_find()
 	{
         $coln = new Mongo_Collection(self::TEST_DATABASE,"testCollection");

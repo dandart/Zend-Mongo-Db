@@ -43,6 +43,12 @@ class Mongo_Collection implements Countable
 	{
 		return $this->raw_mongoCollection()->drop();
 	}
+	
+	public function ensureIndex($keys, Array $options = array())
+	{
+	    return $this->raw_mongoCollection()->ensureIndex($keys, $options);
+	}
+	
 	/**
 	 *	@purpose:	returns a cursor of data from querying the collection -
 	 *      allow a read-only slave to do this
