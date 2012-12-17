@@ -17,19 +17,11 @@ defined('APPLICATION_ENV')		or define('APPLICATION_ENV', 	ENVIRONMENT_UNIT_TEST)
 defined('APPLICATION_PATH') 	or define('APPLICATION_PATH', 	realpath(dirname(__FILE__)).'/src/main/php/Mongo');
 defined('MOCK_DB_PATH')			or define('MOCK_DB_PATH', 		realpath(dirname(__FILE__)).'/src/test/testDB/');
 
-require_once 'Mockery/Loader.php';
-require_once 'Mockery/Configuration.php';
-$mockery_loader = new \Mockery\Loader;
-$mockery_loader->register();
-Mockery::getConfiguration()->allowMockingNonExistentMethods(false);
-Mockery::getConfiguration()->allowMockingMethodsUnnecessarily(false);
-
 require_once "Zend/Loader/Autoloader.php";
 $autoloader = Zend_Loader_Autoloader::getInstance();
 $autoloader->registerNamespace('PHPUnit_');
 $autoloader->registerNamespace('Zend_');
 $autoloader->registerNamespace('Mongo_');
-$autoloader->registerNamespace('Mockery_');
 
 //PHPUnit_Util_Filter::addDirectoryToWhitelist(MONGO_PATH);
 
