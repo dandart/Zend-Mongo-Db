@@ -3,7 +3,7 @@
 <plist version="1.0">
 <dict>
 	<key>currentDocument</key>
-	<string>src/main/php/Mongo/Cursor.php</string>
+	<string>pom.xml</string>
 	<key>documents</key>
 	<array>
 		<dict>
@@ -35,33 +35,79 @@
 			<key>firstVisibleLine</key>
 			<integer>0</integer>
 		</dict>
-		<key>environments.php</key>
-		<dict>
-			<key>caret</key>
-			<dict>
-				<key>column</key>
-				<integer>61</integer>
-				<key>line</key>
-				<integer>10</integer>
-			</dict>
-			<key>firstVisibleColumn</key>
-			<integer>0</integer>
-			<key>firstVisibleLine</key>
-			<integer>0</integer>
-		</dict>
 		<key>pom.xml</key>
 		<dict>
 			<key>caret</key>
 			<dict>
 				<key>column</key>
-				<integer>15</integer>
+				<integer>12</integer>
 				<key>line</key>
-				<integer>139</integer>
+				<integer>148</integer>
 			</dict>
 			<key>firstVisibleColumn</key>
 			<integer>0</integer>
 			<key>firstVisibleLine</key>
+			<integer>44</integer>
+		</dict>
+		<key>registerautoload.php</key>
+		<dict>
+			<key>caret</key>
+			<dict>
+				<key>column</key>
+				<integer>0</integer>
+				<key>line</key>
+				<integer>25</integer>
+			</dict>
+			<key>columnSelection</key>
+			<true/>
+			<key>firstVisibleColumn</key>
 			<integer>0</integer>
+			<key>firstVisibleLine</key>
+			<integer>0</integer>
+			<key>selectFrom</key>
+			<dict>
+				<key>column</key>
+				<integer>0</integer>
+				<key>line</key>
+				<integer>19</integer>
+			</dict>
+			<key>selectTo</key>
+			<dict>
+				<key>column</key>
+				<integer>0</integer>
+				<key>line</key>
+				<integer>25</integer>
+			</dict>
+		</dict>
+		<key>src/main/php/Mongo/Collection.php</key>
+		<dict>
+			<key>caret</key>
+			<dict>
+				<key>column</key>
+				<integer>0</integer>
+				<key>line</key>
+				<integer>64</integer>
+			</dict>
+			<key>columnSelection</key>
+			<false/>
+			<key>firstVisibleColumn</key>
+			<integer>0</integer>
+			<key>firstVisibleLine</key>
+			<integer>68</integer>
+			<key>selectFrom</key>
+			<dict>
+				<key>column</key>
+				<integer>61</integer>
+				<key>line</key>
+				<integer>64</integer>
+			</dict>
+			<key>selectTo</key>
+			<dict>
+				<key>column</key>
+				<integer>0</integer>
+				<key>line</key>
+				<integer>64</integer>
+			</dict>
 		</dict>
 		<key>src/main/php/Mongo/Connection.php</key>
 		<dict>
@@ -82,30 +128,14 @@
 			<key>caret</key>
 			<dict>
 				<key>column</key>
-				<integer>0</integer>
-				<key>line</key>
-				<integer>18</integer>
-			</dict>
-			<key>columnSelection</key>
-			<false/>
-			<key>firstVisibleColumn</key>
-			<integer>0</integer>
-			<key>firstVisibleLine</key>
-			<integer>0</integer>
-			<key>selectFrom</key>
-			<dict>
-				<key>column</key>
-				<integer>45</integer>
+				<integer>3</integer>
 				<key>line</key>
 				<integer>99</integer>
 			</dict>
-			<key>selectTo</key>
-			<dict>
-				<key>column</key>
-				<integer>0</integer>
-				<key>line</key>
-				<integer>18</integer>
-			</dict>
+			<key>firstVisibleColumn</key>
+			<integer>0</integer>
+			<key>firstVisibleLine</key>
+			<integer>84</integer>
 		</dict>
 		<key>src/test/php/Mongo/CollectionTest.php</key>
 		<dict>
@@ -135,34 +165,51 @@
 			<key>firstVisibleLine</key>
 			<integer>94</integer>
 		</dict>
-		<key>target/classes/Mongo/Connection.php</key>
+		<key>src/test/php/Mongo/CursorTest.php</key>
 		<dict>
 			<key>caret</key>
 			<dict>
 				<key>column</key>
-				<integer>1</integer>
+				<integer>10</integer>
 				<key>line</key>
-				<integer>189</integer>
+				<integer>53</integer>
 			</dict>
 			<key>firstVisibleColumn</key>
 			<integer>0</integer>
 			<key>firstVisibleLine</key>
-			<integer>177</integer>
+			<integer>27</integer>
+		</dict>
+		<key>src/test/php/Mongo/mongo.ini</key>
+		<dict>
+			<key>caret</key>
+			<dict>
+				<key>column</key>
+				<integer>0</integer>
+				<key>line</key>
+				<integer>0</integer>
+			</dict>
+			<key>firstVisibleColumn</key>
+			<integer>0</integer>
+			<key>firstVisibleLine</key>
+			<integer>0</integer>
 		</dict>
 	</dict>
 	<key>openDocuments</key>
 	<array>
 		<string>src/test/php/Mongo/CollectionTest.php</string>
-		<string>config.xml</string>
-		<string>environments.php</string>
-		<string>pom.xml</string>
+		<string>registerautoload.php</string>
 		<string>src/main/php/Mongo/Connection.php</string>
 		<string>src/test/php/Mongo/ConnectionTest.php</string>
 		<string>src/main/php/Mongo/Cursor.php</string>
+		<string>src/test/php/Mongo/CursorTest.php</string>
+		<string>config.xml</string>
+		<string>pom.xml</string>
+		<string>src/test/php/Mongo/mongo.ini</string>
+		<string>src/main/php/Mongo/Collection.php</string>
 	</array>
 	<key>showFileHierarchyDrawer</key>
 	<true/>
 	<key>windowFrame</key>
-	<string>{{932, 109}, {1413, 821}}</string>
+	<string>{{1071, 238}, {1413, 821}}</string>
 </dict>
 </plist>

@@ -139,12 +139,6 @@
 			<artifactId>Zend</artifactId>
 			<version>${zend.version}</version>
 		</dependency>
-        <dependency>
-            <artifactId>Mockery</artifactId>
-            <groupId>UnitTest</groupId>
-            <version>${Mockery.version}</version>
-            <scope>test</scope>
-        </dependency>
 	</dependencies>
 	<reporting>
 		<plugins>
