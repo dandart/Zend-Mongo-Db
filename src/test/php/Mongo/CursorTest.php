@@ -38,6 +38,24 @@ class Mongo_CursorTest extends PHPUnit_Framework_TestCase	{
 		$this->assertEquals("Mongo_Cursor", get_class($cursor));
 		$this->assertEquals(10,						 count($cursor));
 	}
+	public function testFAIL_foreach()
+	{
+        $mockCursor = Mockery::mock('MongoCursor')
+            ->shouldReceive('current')
+            ->andThrow(new Exception('Fail'))
+            ->mock();
+        
+        $mockCollection = Mockery::mock('Mongo_Collection')
+            ->shouldReceive('getDatabaseName')
+            ->andReturn(self::TEST_DATABASE)
+            ->shouldReceive('getCollectionName')
+            ->andReturn(self::TEST_COLLECTION)
+            ->mock();
+        //
+        
+		$cursor = new Mongo_Cursor($mockCursor, $mockCollection, array('query'), array('fields'));
+        $cursor->current();
+	}
 	//testLimit
 	public function testSUCCEED_limit()									{
 		/**

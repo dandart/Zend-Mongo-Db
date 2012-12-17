@@ -12,16 +12,29 @@ class Mongo_Cursor implements OuterIterator, Countable
 {
 	private	$_cursor 				= null;	//This is the MongoCursor
 	private $_strDatabaseName		= null;
+	private $_strCollectionName     = null;
+	private $_arrQuery              = array();
+	private $_arrFields             = array();
 	
-	public function __construct(MongoCursor $cursor, $strDatabaseName)
-	{
+	public function __construct(
+	    MongoCursor $cursor,
+	    Mongo_Collection $mongoCollection,
+	    Array $arrQuery,
+	    Array $arrFields
+	) {
 		/**
 		 *	@purpose:	A cursor is a wrapper for the MongoCursor therefore it needs a "non-null" MongoCursor to create
 		**/
-		if(is_null($cursor) || is_null($strDatabaseName))
+		if (is_null($cursor) ||
+		    is_null($mongoCollection->getCollectionName()) ||
+		    is_null($mongoCollection->getDatabaseName())) {
 			throw new Mongo_Exception(Mongo_Exception::ERROR_NOT_NULL);
+		}
 		$this->_cursor 				= $cursor;
-		$this->_strDatabaseName		= $strDatabaseName;
+		$this->_strCollectionName   = $mongoCollection->getCollectionName();
+		$this->_strDatabaseName		= $mongoCollection->getDatabaseName();
+		$this->_arrQuery            = $arrQuery;
+		$this->_arrFields           = $arrFields;
 	}
 	public function getDatabaseName()
 	{
@@ -80,7 +93,11 @@ class Mongo_Cursor implements OuterIterator, Countable
 		 *	
 		 *	@todo:		Probably should replace this with returning a Mongo_Document
 		**/
-		return $this->_cursor->current();
+		try {
+		    return $this->_cursor->current();
+		} catch(Exception $e) { // Should happen for everything
+		    $this->_rethrow($e);
+		}
 	}	
 	public function getNext()
 	{
@@ -93,19 +110,44 @@ class Mongo_Cursor implements OuterIterator, Countable
 	}
 	public function next()
 	{
-		return $this->getInnerIterator()->next();
+	    try {
+		    return $this->getInnerIterator()->next();
+		} catch(Exception $e) { // Should happen for everything
+		    $this->_rethrow($e);
+		}
 	}
 	public function rewind()
 	{
-		return $this->getInnerIterator()->rewind();
+	    try {
+		    return $this->getInnerIterator()->rewind();
+		} catch(Exception $e) { // Should happen for everything
+		    $this->_rethrow($e);
+		}
 	}
 	public function valid()
 	{
-		return $this->getInnerIterator()->valid();
+	    try {
+		    return $this->getInnerIterator()->valid();
+		} catch(Exception $e) { // Should happen for everything
+		    $this->_rethrow($e);
+		}
 	}
 	public function info()
 	{
 		return $this->getInnerIterator()->info();
+	}
+	
+	private function _rethrow(MongoCursorException $e)
+	{
+	    throw new Mongo_Exception(
+	        sprintf(
+	            Mongo_Exception::ERROR_CURSOR_EXCEPTION,
+	            $this->getDatabaseName(),
+	            $this->_strCollectionName,
+	            json_encode($this->_arrQuery),
+	            json_encode($this->_arrFields)
+	        )
+	    );
 	}
 	
 	//Implements Countable

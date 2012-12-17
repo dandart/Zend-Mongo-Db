@@ -11,6 +11,7 @@
 	<version>1.1-SNAPSHOT</version>
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<Mockery.version>0.7.2</Mockery.version>
 		<phpmaven.version>1.1-SNAPSHOT</phpmaven.version>
 		<phpunit.version>3.3.9</phpunit.version>
 		<zend.version>1.11.11</zend.version>
@@ -138,6 +139,12 @@
 			<artifactId>Zend</artifactId>
 			<version>${zend.version}</version>
 		</dependency>
+        <dependency>
+            <artifactId>Mockery</artifactId>
+            <groupId>UnitTest</groupId>
+            <version>${Mockery.version}</version>
+            <scope>test</scope>
+        </dependency>
 	</dependencies>
 	<reporting>
 		<plugins>
