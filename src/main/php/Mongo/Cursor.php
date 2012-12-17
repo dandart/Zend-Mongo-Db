@@ -137,11 +137,12 @@ class Mongo_Cursor implements OuterIterator, Countable
 		return $this->getInnerIterator()->info();
 	}
 	
-	private function _rethrow(MongoCursorException $e)
+	private function _rethrow(Exception $e)
 	{
 	    throw new Mongo_Exception(
 	        sprintf(
 	            Mongo_Exception::ERROR_CURSOR_EXCEPTION,
+	            $e->getMessage(),
 	            $this->getDatabaseName(),
 	            $this->_strCollectionName,
 	            json_encode($this->_arrQuery),
