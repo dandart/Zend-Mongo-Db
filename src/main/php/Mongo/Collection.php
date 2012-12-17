@@ -62,7 +62,7 @@ class Mongo_Collection implements Countable
 			throw new Mongo_Exception(Mongo_Exception::ERROR_MISSING_VALUES);
 		}
 		$cursor				= $this->raw_mongoCollection()->find($query, $fields)->slaveOkay();
-		return new Mongo_Cursor($cursor, $this->getDatabaseName());
+		return new Mongo_Cursor($cursor, $this, $query, $fields);
 	}
 	/**
 	 *	@purpose:	Find one document from a collection -
