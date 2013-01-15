@@ -137,6 +137,19 @@ class Mongo_Cursor implements OuterIterator, Countable
 		return $this->getInnerIterator()->info();
 	}
 	
+	/**
+	 * Add timeout to the MongoCursor
+	 *
+	 * @param int $intTimeout 
+	 * @return $this
+	 * @author Dan Dart
+	**/
+	public function timeout($intTimeout)
+	{
+        $this->getInnerIterator()->timeout($intTimeout);
+        return $this;
+	}
+	
 	private function _rethrow(Exception $e)
 	{
 	    throw new Mongo_Exception(
