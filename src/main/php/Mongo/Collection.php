@@ -190,6 +190,25 @@ class Mongo_Collection implements Countable
 	{
 	    $options["safe"]		= $bSafe;
 	    return $this->raw_mongoCollection()->remove($arrCriteria, $options);
+}
+	/**
+	 * Batch inserts raw documents
+	 *
+	 * @param Array $arrDocuments 
+	 * @param string $bSafe 
+	 * @return void
+	 * @author Dan Dart
+	**/
+	public function insertArrays(
+	    Array $arrDocuments,
+	    $bSafe = true,
+	    $intTimeout = 30
+	) {
+	    $arrOptions = array(
+	        'safe' => $bSafe,
+	        'timeout' => $intTimeout
+	    );
+	    return $this->raw_mongoCollection()->batchInsert($arrDocuments, $arrOptions);
 	}
 	/**
 	 *	@purpose: 	Helper function to ensure that the mongoCollection is always valid

@@ -65,6 +65,33 @@ class Mongo_CollectionTest extends PHPUnit_Framework_TestCase	{
         $this->assertTrue($cursor instanceof Mongo_Cursor);
 	}
 	
+	public function testSUCCEED_batchInsert()
+	{
+	    $coln = new Mongo_Collection(self::TEST_DATABASE,"testCollection");
+	    // Clear
+	    $coln->removeArray(array());
+	    $arrDocuments = array(
+	       array(
+	           Mongo_Connection::MONGO_FIELD_ID => '123',
+	           'Field1' => '1234'
+	       ),
+	       array(
+   	           Mongo_Connection::MONGO_FIELD_ID => '234',
+   	           'Field1' => '2345'
+   	       ),
+   	       array(
+   	           Mongo_Connection::MONGO_FIELD_ID => '345',
+   	           'Field1' => '3456'
+   	       )
+	    );
+	    // bulkInsert
+	    $coln->insertArrays($arrDocuments);
+	    $intCount = $coln->find()->count();
+	    $this->assertEquals(count($arrDocuments), $intCount);
+	    // Clear again
+        //$coln->removeArray(array());
+	}
+	
 	//decodeReference
 
 	
