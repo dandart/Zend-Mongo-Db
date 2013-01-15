@@ -202,13 +202,21 @@ class Mongo_Collection implements Countable
 	public function insertArrays(
 	    Array $arrDocuments,
 	    $bSafe = true,
-	    $intTimeout = 30
+	    $intTimeout = 30000,
+	    $bContinueOnError = false
 	) {
 	    $arrOptions = array(
 	        'safe' => $bSafe,
-	        'timeout' => $intTimeout
+	        'timeout' => $intTimeout,
+	        'continueOnError' => $bContinueOnError
 	    );
-	    return $this->raw_mongoCollection()->batchInsert($arrDocuments, $arrOptions);
+        try {
+            return $this->raw_mongoCollection()->batchInsert($arrDocuments, $arrOptions);
+        } catch(MongoCursorException $e) {
+            if (!$bContinueOnError) {
+                throw $e;
+            }
+        }
 	}
 	/**
 	 *	@purpose: 	Helper function to ensure that the mongoCollection is always valid

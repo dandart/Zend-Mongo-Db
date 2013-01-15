@@ -92,6 +92,42 @@ class Mongo_CollectionTest extends PHPUnit_Framework_TestCase	{
         //$coln->removeArray(array());
 	}
 	
+	public function testSUCCEED_batchInsert_duplicateIndex()
+	{
+	    $coln = new Mongo_Collection(self::TEST_DATABASE,"testCollection");
+	    // Clear
+	    $coln->removeArray(array());
+	    $coln->ensureIndex(array('IndexedValue' => 1),array('unique' => true));
+	    $arrDocuments = array(
+	       array(
+	           Mongo_Connection::MONGO_FIELD_ID => '123',
+	           'Field1' => '1234',
+	           'IndexedValue' => 'one'
+	       ),
+	       array(
+  	           Mongo_Connection::MONGO_FIELD_ID => '777',
+  	           'Field1' => '8888',
+  	           'IndexedValue' => 'three'
+  	       ),
+	       array(
+   	           Mongo_Connection::MONGO_FIELD_ID => '234',
+   	           'Field1' => '2345',
+   	           'IndexedValue' => 'one'
+   	       ),
+   	       array(
+   	           Mongo_Connection::MONGO_FIELD_ID => '345',
+   	           'Field1' => '3456',
+   	           'IndexedValue' => 'two'
+   	       )
+	    );
+	    // bulkInsert
+	    $coln->insertArrays($arrDocuments, true, 30000, true);
+	    $intCount = $coln->find()->count();
+	    $this->assertEquals(count($arrDocuments), $intCount);
+	    // Clear again
+        $coln->removeArray(array());
+	}
+	
 	//decodeReference
 
 	
