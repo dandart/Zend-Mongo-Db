@@ -123,7 +123,7 @@ class Mongo_CollectionTest extends PHPUnit_Framework_TestCase	{
 	    // bulkInsert
 	    $coln->insertArrays($arrDocuments, true, 30000, true);
 	    $intCount = $coln->find()->count();
-	    $this->assertEquals(count($arrDocuments), $intCount);
+	    $this->assertEquals(count($arrDocuments)-1, $intCount);
 	    // Clear again
         $coln->removeArray(array());
 	}
