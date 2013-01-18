@@ -172,10 +172,6 @@ class Mongo_Cursor implements OuterIterator, Countable
 	**/
 	public function count($bFoundOnly = false)
 	{
-		try {
-			return $this->getInnerIterator()->count($bFoundOnly);
-		} catch(Exception $e) {
-			return -1;
-		}
+		return $this->getInnerIterator()->count($bFoundOnly);
 	}
 }
