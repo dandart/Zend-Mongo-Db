@@ -178,11 +178,12 @@ class Mongo_Collection implements Countable
     /**
 	 *  Saves an array (rather than a Document)
 	**/
-	public function updateArray(Array $arrCriteria, Array $arrNewObject, $bSafe = true, $bMultiple = false, $bUpsert = true)
+	public function updateArray(Array $arrCriteria, Array $arrNewObject, $bSafe = true, $bMultiple = false, $bUpsert = true, $intTimeout = 30000)
 	{
 		$options["safe"]		= $bSafe;
 		$options["multiple"]	= $bMultiple;
 		$options["upsert"]		= $bUpsert;
+		$options["timeout"]     = $intTimeout;
 		$this->raw_mongoCollection()->update($arrCriteria, $arrNewObject, $options);
 		return true;
 	}
