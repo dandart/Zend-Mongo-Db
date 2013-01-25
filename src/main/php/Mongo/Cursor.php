@@ -15,7 +15,7 @@ class Mongo_Cursor implements OuterIterator, Countable
 	private $_strCollectionName     = null;
 	private $_arrQuery              = array();
 	private $_arrFields             = array();
-	
+
 	public function __construct(
 	    MongoCursor $cursor,
 	    Mongo_Collection $mongoCollection,
@@ -69,7 +69,7 @@ class Mongo_Cursor implements OuterIterator, Countable
 		$this->_cursor = $this->_cursor->skip($intNoToSkip);
 		return $this;
 	}
-	
+
 	//Implements OuterIterator
 	public function getInnerIterator()
 	{
@@ -90,7 +90,7 @@ class Mongo_Cursor implements OuterIterator, Countable
 	{
 		/**
 		 *	@purpose:	Returns the (array?) of the the the cursor currently represents
-		 *	
+		 *
 		 *	@todo:		Probably should replace this with returning a Mongo_Document
 		**/
 		try {
@@ -98,7 +98,7 @@ class Mongo_Cursor implements OuterIterator, Countable
 		} catch(Exception $e) { // Should happen for everything
 		    $this->_rethrow($e);
 		}
-	}	
+	}
 	public function getNext()
 	{
 		$this->next();
@@ -136,11 +136,11 @@ class Mongo_Cursor implements OuterIterator, Countable
 	{
 		return $this->getInnerIterator()->info();
 	}
-	
+
 	/**
 	 * Add timeout to the MongoCursor
 	 *
-	 * @param int $intTimeout 
+	 * @param int $intTimeout
 	 * @return $this
 	 * @author Dan Dart
 	**/
@@ -149,7 +149,7 @@ class Mongo_Cursor implements OuterIterator, Countable
         $this->getInnerIterator()->timeout($intTimeout);
         return $this;
 	}
-	
+
 	private function _rethrow(Exception $e)
 	{
 	    throw new Mongo_Exception(
@@ -163,7 +163,7 @@ class Mongo_Cursor implements OuterIterator, Countable
 	        )
 	    );
 	}
-	
+
 	//Implements Countable
 	/**
 	 *	@purpose 	This returns the size of the cursor
